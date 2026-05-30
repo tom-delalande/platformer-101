@@ -1,0 +1,2 @@
+headers = raylib.h
+headerFilter = raylib.h
