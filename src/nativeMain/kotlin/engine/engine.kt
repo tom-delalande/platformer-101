@@ -44,6 +44,8 @@ fun engineInit() {
             Entity.Terrain to LoadTexture("Assets/Pixel Adventure/Terrain/Terrain (16x16).png"),
             Entity.Player to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Idle (32x32).png"),
             Entity.RockHead to LoadTexture("Assets/Pixel Adventure/Traps/Rock Head/Idle.png"),
+
+            Entity.PlayerRunning to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Run (32x32).png"),
         )
     )
 }
@@ -151,9 +153,17 @@ fun render() {
             }
             val playerEntity = model.map.find { it.entity == Entity.Player }
             if (playerEntity != null) {
+                var numberOfFrames = 11
+                var entity = Entity.Player
+                when {
+                    model.playerVelocityX != 0f -> {
+                        numberOfFrames = 12
+                        entity = Entity.PlayerRunning
+                    }
+                }
                 drawSprite(
-                    sprite = Entity.Player,
-                    inputX = 0,
+                    sprite = entity,
+                    inputX = 32 * (model.playerCurrentAnimationFrame % numberOfFrames),
                     inputY = 0,
                     inputWidth = 32,
                     inputHeight = 32,

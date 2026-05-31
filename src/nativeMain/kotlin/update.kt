@@ -1,37 +1,13 @@
 import engine.engineData
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.usePinned
+import kotlin.math.max
+import kotlin.math.min
 import kotlinx.serialization.json.Json
 import logic.Input
 import logic.MapEntity
 import logic.SceneType
 import logic.model
-import platform.posix.*
 
 private val json = Json { prettyPrint = true }
-
-@OptIn(ExperimentalForeignApi::class)
-private fun writeTextFile(path: String, text: String) {
-    val file = fopen(path, "w") ?: return
-    fputs(text, file)
-    fclose(file)
-}
-
-@OptIn(ExperimentalForeignApi::class)
-private fun readTextFile(path: String): String? {
-    val file = fopen(path, "r") ?: return null
-    fseek(file, 0, SEEK_END)
-    val size = ftell(file)
-    if (size <= 0) { fclose(file); return null }
-    rewind(file)
-    val bytes = ByteArray(size.toInt())
-    bytes.usePinned { pinned ->
-        fread(pinned.addressOf(0), 1u, size.toULong(), file)
-    }
-    fclose(file)
-    return bytes.decodeToString()
-}
 
 fun update() {
     when (model.sceneType) {
@@ -81,13 +57,24 @@ fun update() {
         }
 
         SceneType.Play -> {
-            val speed = 0.5f
+            val speed = 1f
+            val maxVelocity = 5f
+            val friction = 0.2f
             if (Input.KeyboardD.isPressed()) {
-                model.playerPositionX += speed
+                model.playerVelocityX = max(model.playerVelocityX + speed, maxVelocity)
             }
             if (Input.KeyboardA.isPressed()) {
-                model.playerPositionX -= speed
+                model.playerVelocityX = min(model.playerVelocityX - speed, -maxVelocity)
             }
+
+
+            model.playerPositionX += model.playerVelocityX
+            if (model.playerVelocityX > 0) {
+                model.playerVelocityX = max(model.playerVelocityX - friction, 0f)
+            } else {
+                model.playerVelocityX = min(model.playerVelocityX + friction, 0f)
+            }
+            model.playerCurrentAnimationFrame += 1
         }
     }
 }

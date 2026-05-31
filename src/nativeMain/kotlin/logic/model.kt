@@ -50,6 +50,9 @@ data class Model(
     var playerPositionY: Float = 0.0f,
     var playerVelocityX: Float = 0.0f,
     var playerVelocityY: Float = 0.0f,
+    var playerIsGrounded: Boolean = true,
+
+    var playerCurrentAnimationFrame: Int = 0,
 )
 
 @Serializable
@@ -82,6 +85,8 @@ enum class Entity {
     Terrain,
     Player,
     RockHead,
+
+    PlayerRunning,
 }
 
 fun Entity.getSpriteData() = when (this) {
