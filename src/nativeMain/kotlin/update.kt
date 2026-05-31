@@ -2,6 +2,7 @@ import engine.engineData
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.serialization.json.Json
+import logic.Entity
 import logic.Input
 import logic.MapEntity
 import logic.SceneType
@@ -57,22 +58,115 @@ fun update() {
         }
 
         SceneType.Play -> {
-            val speed = 1f
-            val maxVelocity = 5f
+            val speed = 2f
+            val maxVelocity = 10f
             val friction = 0.2f
+
             if (Input.KeyboardD.isPressed()) {
-                model.playerVelocityX = max(model.playerVelocityX + speed, maxVelocity)
+                model.playerVelocityX = min(model.playerVelocityX + speed, maxVelocity)
             }
             if (Input.KeyboardA.isPressed()) {
-                model.playerVelocityX = min(model.playerVelocityX - speed, -maxVelocity)
+                model.playerVelocityX = max(model.playerVelocityX - speed, -maxVelocity)
             }
 
+            val maxJumpVelocity = 30f
+            val jumpSpeed = 10f
+            val gravity = 6f
+            if (Input.KeyboardW.isPressed() && model.playerIsJumping) {
+                model.playerVelocityY = min(model.playerVelocityY + jumpSpeed, maxJumpVelocity)
+            }
+
+            if (Input.KeyboardW.isNewlyPressed() && model.playerIsGrounded) {
+                model.playerIsJumping = true
+                model.playerVelocityY = min(model.playerVelocityY + jumpSpeed, maxJumpVelocity)
+            }
+
+            if (!Input.KeyboardW.isPressed() || model.playerVelocityY >= maxJumpVelocity) model.playerIsJumping = false
 
             model.playerPositionX += model.playerVelocityX
+            model.playerPositionY -= model.playerVelocityY // y is inverse
+
+            // AI-1: handle collisions and set player is grounded here using model.map (which stores all the coordinates of blocks) and model.playerPositionX and model.playerPositionY
+            // Player position is using the pixel value, while the map block use the co-ordiates with bottom left being 0,0
+            // Player should collide with and walk on all blocks
+            val playerEntity = model.map.find { it.entity == Entity.Player }
+            if (playerEntity != null) {
+                val terrainBlocks = model.map.filter { it.entity == Entity.Terrain }
+                val tileSize = 64f
+
+                model.playerIsGrounded = false
+
+                for (block in terrainBlocks) {
+                    val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
+                    val pWorldY = playerEntity.gridPositionY * tileSize - model.playerPositionY
+
+                    val playerRight = pWorldX + tileSize
+                    val playerTop = pWorldY + tileSize
+
+                    val blockLeft = block.gridPositionX * tileSize
+                    val blockRight = blockLeft + tileSize
+                    val blockBottom = block.gridPositionY * tileSize
+                    val blockTop = blockBottom + tileSize
+
+                    if (playerRight > blockLeft && pWorldX < blockRight &&
+                        playerTop > blockBottom && pWorldY < blockTop
+                    ) {
+                        val overlapLeft = playerRight - blockLeft
+                        val overlapRight = blockRight - pWorldX
+                        val overlapBottom = playerTop - blockBottom
+                        val overlapTop = blockTop - pWorldY
+
+                        val minOverlapX = min(overlapLeft, overlapRight)
+                        val minOverlapY = min(overlapBottom, overlapTop)
+
+                        if (minOverlapX < minOverlapY) {
+                            if (overlapLeft < overlapRight) {
+                                model.playerPositionX = blockLeft - tileSize - playerEntity.gridPositionX * tileSize
+                            } else {
+                                model.playerPositionX = blockRight - playerEntity.gridPositionX * tileSize
+                            }
+                        } else {
+                            if (overlapTop < overlapBottom) {
+                                model.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
+                                model.playerVelocityY = 0f
+                                model.playerIsGrounded = true
+                            } else {
+                                model.playerPositionY = playerEntity.gridPositionY * tileSize - (blockBottom - tileSize)
+                                model.playerVelocityY = 0f
+                            }
+                        }
+                    }
+                }
+
+                val groundedTolerance = 2f
+                for (block in terrainBlocks) {
+                    val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
+                    val pWorldY = playerEntity.gridPositionY * tileSize - model.playerPositionY
+
+                    val playerRight = pWorldX + tileSize
+                    val playerBottom = pWorldY
+
+                    val blockLeft = block.gridPositionX * tileSize
+                    val blockRight = blockLeft + tileSize
+                    val blockTop = block.gridPositionY * tileSize + tileSize
+
+                    if (playerRight > blockLeft && pWorldX < blockRight &&
+                        playerBottom >= blockTop - groundedTolerance && playerBottom <= blockTop + groundedTolerance
+                    ) {
+                        model.playerIsGrounded = true
+                        model.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
+                        break
+                    }
+                }
+            }
+
             if (model.playerVelocityX > 0) {
                 model.playerVelocityX = max(model.playerVelocityX - friction, 0f)
             } else {
                 model.playerVelocityX = min(model.playerVelocityX + friction, 0f)
+            }
+            if (!model.playerIsGrounded) {
+                model.playerVelocityY -= gravity
             }
             model.playerCurrentAnimationFrame += 1
         }

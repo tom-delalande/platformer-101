@@ -51,6 +51,7 @@ data class Model(
     var playerVelocityX: Float = 0.0f,
     var playerVelocityY: Float = 0.0f,
     var playerIsGrounded: Boolean = true,
+    var playerIsJumping: Boolean = false,
 
     var playerCurrentAnimationFrame: Int = 0,
 )
