@@ -87,7 +87,9 @@ enum class Entity {
     Player,
     RockHead,
 
-    PlayerRunning,
+    PlayerRun,
+    PlayerJump,
+    PlayerFall,
 }
 
 fun Entity.getSpriteData() = when (this) {

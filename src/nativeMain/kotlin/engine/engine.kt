@@ -9,7 +9,6 @@ import kotlinx.cinterop.useContents
 import logic.Entity
 import logic.Input
 import logic.SceneType
-import logic.SpriteData
 import logic.getSpriteData
 import logic.model
 import raylib.BeginDrawing
@@ -19,7 +18,6 @@ import raylib.DrawTexturePro
 import raylib.EndDrawing
 import raylib.GetMousePosition
 import raylib.IsKeyDown
-import raylib.IsKeyUp
 import raylib.IsMouseButtonPressed
 import raylib.KEY_A
 import raylib.KEY_D
@@ -45,7 +43,9 @@ fun engineInit() {
             Entity.Player to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Idle (32x32).png"),
             Entity.RockHead to LoadTexture("Assets/Pixel Adventure/Traps/Rock Head/Idle.png"),
 
-            Entity.PlayerRunning to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Run (32x32).png"),
+            Entity.PlayerRun to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Run (32x32).png"),
+            Entity.PlayerJump to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Jump (32x32).png"),
+            Entity.PlayerFall to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Fall (32x32).png"),
         )
     )
 }
@@ -158,7 +158,19 @@ fun render() {
                 when {
                     model.playerVelocityX != 0f -> {
                         numberOfFrames = 12
-                        entity = Entity.PlayerRunning
+                        entity = Entity.PlayerRun
+                    }
+                    model.playerVelocityY == 0f && model.playerVelocityX == 0f -> {
+                        numberOfFrames = 11
+                        entity = Entity.Player
+                    }
+                    model.playerVelocityY >= 0 -> {
+                        numberOfFrames = 1
+                        entity = Entity.PlayerJump
+                    }
+                    model.playerVelocityY < 0 -> {
+                        numberOfFrames = 1
+                        entity = Entity.PlayerFall
                     }
                 }
                 drawSprite(
