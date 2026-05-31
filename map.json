@@ -1,0 +1,67 @@
+[
+    {
+        "gridPositionX": 0,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 1,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 2,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 3,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 4,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 5,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 6,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 7,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 8,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 9,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 10,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 11,
+        "gridPositionY": 4,
+        "entity": "Terrain"
+    },
+    {
+        "gridPositionX": 0,
+        "gridPositionY": 5,
+        "entity": "Player"
+    }
+]

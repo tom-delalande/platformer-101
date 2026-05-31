@@ -2,6 +2,7 @@ val isLinux = System.getProperty("os.name").lowercase().contains("linux")
 
 plugins {
     kotlin("multiplatform") version "2.3.21"
+    kotlin("plugin.serialization") version "2.3.21"
 }
 
 repositories {
@@ -34,6 +35,12 @@ kotlin {
                     "-framework", "CoreFoundation"
                 )
             }
+        }
+    }
+
+    sourceSets {
+        nativeMain.dependencies {
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
         }
     }
 

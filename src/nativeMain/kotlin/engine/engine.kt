@@ -7,7 +7,10 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cValue
 import kotlinx.cinterop.useContents
 import logic.Entity
+import logic.Input
 import logic.SceneType
+import logic.SpriteData
+import logic.getSpriteData
 import logic.model
 import raylib.BeginDrawing
 import raylib.ClearBackground
@@ -15,7 +18,16 @@ import raylib.Color
 import raylib.DrawTexturePro
 import raylib.EndDrawing
 import raylib.GetMousePosition
+import raylib.IsKeyDown
+import raylib.IsKeyUp
 import raylib.IsMouseButtonPressed
+import raylib.KEY_A
+import raylib.KEY_D
+import raylib.KEY_E
+import raylib.KEY_L
+import raylib.KEY_P
+import raylib.KEY_S
+import raylib.KEY_W
 import raylib.LoadTexture
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
@@ -37,18 +49,18 @@ fun engineInit() {
 }
 
 fun engineUpdate() {
-    if (model.isMouse1Pressed) {
-        model.wasMouse1Pressed = true
-    }
+    model.wasPressed = model.isPressed
 
-    if (model.isMouse2Pressed) {
-        model.wasMouse2Pressed = true
-    }
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT.toInt())) {
-        model.isMouse1Pressed = true
-    }
-    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT.toInt())) {
-        model.isMouse2Pressed = true
+    model.isPressed = buildList {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT.toInt())) add(Input.Mouse1)
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT.toInt())) add(Input.Mouse2)
+        if (IsKeyDown(KEY_S.toInt())) add(Input.KeyboardS)
+        if (IsKeyDown(KEY_L.toInt())) add(Input.KeyboardL)
+        if (IsKeyDown(KEY_P.toInt())) add(Input.KeyboardP)
+        if (IsKeyDown(KEY_E.toInt())) add(Input.KeyboardE)
+        if (IsKeyDown(KEY_W.toInt())) add(Input.KeyboardW)
+        if (IsKeyDown(KEY_A.toInt())) add(Input.KeyboardA)
+        if (IsKeyDown(KEY_D.toInt())) add(Input.KeyboardD)
     }
 
     val mousePosition = GetMousePosition()
@@ -69,31 +81,91 @@ fun render() {
                 inputY = 0,
                 inputWidth = 64,
                 inputHeight = 64,
-                outputPositionX = xOffset * 64,
-                outputPositionY = yOffset * 64,
+                outputPositionX = xOffset * 64f,
+                outputPositionY = yOffset * 64f,
             )
         }
     }
 
-    model.uiElements.forEach {
-        drawSprite(
-            sprite = it.sprite,
-            inputX = it.inputX,
-            inputY = it.inputY,
-            inputWidth = it.inputWidth,
-            inputHeight = it.inputHeight,
-            outputPositionX = it.outputPositionX,
-            outputPositionY = it.outputPositionY,
-            outputWidth = it.outputWidth,
-            outputHeight = it.outputHeight,
-        )
-    }
-
     when (model.sceneType) {
         SceneType.Editor -> {
+            model.map.forEach {
+                val spriteData = it.entity.getSpriteData()
+                drawSprite(
+                    sprite = it.entity,
+                    inputX = spriteData.inputX,
+                    inputY = spriteData.inputY,
+                    inputWidth = spriteData.inputWidth,
+                    inputHeight = spriteData.inputHeight,
+                    outputPositionX = it.gridPositionX * 64f,
+                    outputPositionY = (engineData.windowHeight / 64) * 64 - it.gridPositionY * 64f,
+                    outputWidth = 64,
+                    outputHeight = 64,
+                )
+            }
+
+            if (model.selectedUIElement != null) {
+                drawSprite(
+                    sprite = model.selectedUIElement!!.sprite,
+                    inputX = model.selectedUIElement!!.inputX,
+                    inputY = model.selectedUIElement!!.inputY,
+                    inputWidth = model.selectedUIElement!!.inputWidth,
+                    inputHeight = model.selectedUIElement!!.inputHeight,
+                    outputPositionX = model.mousePositionX - 32f,
+                    outputPositionY = model.mousePositionY - 32f,
+                    outputWidth = 64,
+                    outputHeight = 64,
+                    tint = color(255, 255, 255, 150),
+                )
+            }
+
+            model.uiElements.forEach {
+                drawSprite(
+                    sprite = it.sprite,
+                    inputX = it.inputX,
+                    inputY = it.inputY,
+                    inputWidth = it.inputWidth,
+                    inputHeight = it.inputHeight,
+                    outputPositionX = it.outputPositionX.toFloat(),
+                    outputPositionY = it.outputPositionY.toFloat(),
+                    outputWidth = it.outputWidth,
+                    outputHeight = it.outputHeight,
+                )
+            }
         }
 
-        SceneType.Play -> TODO()
+        SceneType.Play -> {
+            model.map.filter { it.entity != Entity.Player }.forEach {
+                val spriteData = it.entity.getSpriteData()
+                drawSprite(
+                    sprite = it.entity,
+                    inputX = spriteData.inputX,
+                    inputY = spriteData.inputY,
+                    inputWidth = spriteData.inputWidth,
+                    inputHeight = spriteData.inputHeight,
+                    outputPositionX = it.gridPositionX * 64f,
+                    outputPositionY = (engineData.windowHeight / 64) * 64 - it.gridPositionY * 64f,
+                    outputWidth = 64,
+                    outputHeight = 64,
+                )
+            }
+            val playerEntity = model.map.find { it.entity == Entity.Player }
+            if (playerEntity != null) {
+                drawSprite(
+                    sprite = Entity.Player,
+                    inputX = 0,
+                    inputY = 0,
+                    inputWidth = 32,
+                    inputHeight = 32,
+                    outputPositionX = playerEntity.gridPositionX + model.playerPositionX,
+                    outputPositionY = (engineData.windowHeight / 64) * 64 - playerEntity.gridPositionY * 64f + model.playerPositionY,
+                    outputWidth = 64,
+                    outputHeight = 64,
+                )
+            } else {
+                println("WARN: no player entity set in map")
+            }
+        }
     }
     EndDrawing()
 }
@@ -105,8 +177,8 @@ fun drawSprite(
     inputY: Int = 0,
     inputWidth: Int = 16,
     inputHeight: Int = 16,
-    outputPositionX: Int = 0,
-    outputPositionY: Int = 0,
+    outputPositionX: Float = 0f,
+    outputPositionY: Float = 0f,
     outputWidth: Int = inputWidth,
     outputHeight: Int = inputHeight,
     tint: CValue<Color> = color(255, 255, 255),
@@ -120,8 +192,8 @@ fun drawSprite(
             height = inputHeight.toFloat()
         },
         dest = cValue<Rectangle> {
-            x = outputPositionX.toFloat()
-            y = outputPositionY.toFloat()
+            x = outputPositionX
+            y = outputPositionY
             width = outputWidth.toFloat()
             height = outputHeight.toFloat()
         },

@@ -1,10 +1,12 @@
 package logic
 
+import kotlinx.serialization.Serializable
+
 var model = Model()
 
 data class Model(
-    val sceneType: SceneType = SceneType.Editor,
-    val uiElements: List<UIElement> = listOf(
+    var sceneType: SceneType = SceneType.Editor,
+    var uiElements: List<UIElement> = listOf(
         UIElement(
             sprite = Entity.Terrain,
             inputX = 96,
@@ -34,16 +36,27 @@ data class Model(
             outputHeight = 64,
         ),
     ),
-    val selectedElement: UIElement? = null,
+    var selectedUIElement: UIElement? = null,
 
-    var isMouse1Pressed: Boolean = false,
-    var isMouse2Pressed: Boolean = false,
-
-    var wasMouse1Pressed: Boolean = false,
-    var wasMouse2Pressed: Boolean = false,
+    var isPressed: List<Input> = emptyList(),
+    var wasPressed: List<Input> = emptyList(),
 
     var mousePositionX: Int = 0,
     var mousePositionY: Int = 0,
+
+    var map: List<MapEntity> = emptyList(),
+
+    var playerPositionX: Float = 0.0f,
+    var playerPositionY: Float = 0.0f,
+    var playerVelocityX: Float = 0.0f,
+    var playerVelocityY: Float = 0.0f,
+)
+
+@Serializable
+data class MapEntity(
+    val gridPositionX: Int,
+    val gridPositionY: Int,
+    val entity: Entity,
 )
 
 enum class SceneType {
@@ -63,9 +76,53 @@ data class UIElement(
     val outputHeight: Int,
 )
 
+@Serializable
 enum class Entity {
     Background,
     Terrain,
     Player,
     RockHead,
+}
+
+fun Entity.getSpriteData() = when (this) {
+    Entity.Terrain -> SpriteData(
+        inputX = 96,
+        inputY = 0,
+        inputWidth = 48,
+        inputHeight = 48,
+    )
+    Entity.Player -> SpriteData(
+        inputX = 0,
+        inputY = 0,
+        inputWidth = 32,
+        inputHeight = 32,
+    )
+    Entity.RockHead -> SpriteData(
+        inputX = 0,
+        inputY = 0,
+        inputWidth = 42,
+        inputHeight = 42,
+    )
+
+    else -> SpriteData()
+}
+
+data class SpriteData(
+    val inputX: Int = 0,
+    val inputY: Int = 0,
+    val inputWidth: Int = 64,
+    val inputHeight: Int = 64,
+)
+
+enum class Input {
+    Mouse1,
+    Mouse2,
+    KeyboardS,
+    KeyboardL,
+    KeyboardP,
+    KeyboardE,
+
+    KeyboardW,
+    KeyboardA,
+    KeyboardD,
 }
