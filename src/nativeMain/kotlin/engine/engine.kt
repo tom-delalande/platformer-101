@@ -11,6 +11,9 @@ import logic.Input
 import logic.SceneType
 import logic.getSpriteData
 import logic.model
+import logic.playerWorldX
+import logic.playerWorldY
+import logic.tileSize
 import raylib.BeginDrawing
 import raylib.ClearBackground
 import raylib.Color
@@ -38,10 +41,12 @@ private val LIGHTGRAY = color(200, 200, 200)
 fun engineInit() {
     engineData = EngineData(
         sprites = mapOf(
-            Entity.Background to LoadTexture("Assets/Pixel Adventure/Background/Blue.png"),
+            Entity.Background to LoadTexture("Assets/Pixel Adventure/Background/Yellow.png"),
             Entity.Terrain to LoadTexture("Assets/Pixel Adventure/Terrain/Terrain (16x16).png"),
             Entity.Player to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Idle (32x32).png"),
             Entity.RockHead to LoadTexture("Assets/Pixel Adventure/Traps/Rock Head/Idle.png"),
+            Entity.Finish to LoadTexture("Assets/Pixel Adventure/Items/Checkpoints/End/End (Idle).png"),
+            Entity.WoodBox to LoadTexture("Assets/Pixel Adventure/Terrain/Terrain (16x16).png"),
 
             Entity.PlayerRun to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Run (32x32).png"),
             Entity.PlayerJump to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Jump (32x32).png"),
@@ -80,7 +85,7 @@ fun render() {
             drawSprite(
                 sprite = Entity.Background,
                 inputX = 0,
-                inputY = 0,
+                inputY = 0 + model.backgroundOffsetY,
                 inputWidth = 64,
                 inputHeight = 64,
                 outputPositionX = xOffset * 64f,
@@ -160,14 +165,17 @@ fun render() {
                         numberOfFrames = 12
                         entity = Entity.PlayerRun
                     }
+
                     model.playerVelocityY == 0f && model.playerVelocityX == 0f -> {
                         numberOfFrames = 11
                         entity = Entity.Player
                     }
+
                     model.playerVelocityY >= 0 -> {
                         numberOfFrames = 1
                         entity = Entity.PlayerJump
                     }
+
                     model.playerVelocityY < 0 -> {
                         numberOfFrames = 1
                         entity = Entity.PlayerFall
@@ -177,10 +185,10 @@ fun render() {
                     sprite = entity,
                     inputX = 32 * (model.playerCurrentAnimationFrame % numberOfFrames),
                     inputY = 0,
-                    inputWidth = 32,
+                    inputWidth = 32 * model.playerDirection,
                     inputHeight = 32,
-                    outputPositionX = playerEntity.gridPositionX + model.playerPositionX,
-                    outputPositionY = (engineData.windowHeight / 64) * 64 - playerEntity.gridPositionY * 64f + model.playerPositionY,
+                    outputPositionX = playerEntity.gridPositionX * tileSize + model.playerPositionX,
+                    outputPositionY = (engineData.windowHeight / tileSize) * tileSize - playerEntity.gridPositionY * tileSize + model.playerPositionY,
                     outputWidth = 64,
                     outputHeight = 64,
                 )
@@ -189,28 +197,40 @@ fun render() {
             }
 
             model.isPressed.forEach {
+                // TODO(AI): when multiple keys are pressed can you show them all in a line with 8 pixels between them, all 64px above the players head
                 when (it) {
                     Input.KeyboardW -> drawSprite(
                         sprite = sprites["Keyboard_W"]!!,
-                        outputPositionX = 32f,
-                        outputPositionY = 32f,
+                        outputWidth = 64,
+                        outputHeight = 64,
+                        outputPositionX = playerWorldX,
+                        outputPositionY = playerWorldY - 64,
                     )
 
                     Input.KeyboardA -> drawSprite(
                         sprite = sprites["Keyboard_A"]!!,
-                        outputPositionX = 32f,
-                        outputPositionY = 32f,
+                        outputWidth = 64,
+                        outputHeight = 64,
+                        outputPositionX = playerWorldX,
+                        outputPositionY = playerWorldY - 64,
                     )
+
                     Input.KeyboardD -> drawSprite(
                         sprite = sprites["Keyboard_D"]!!,
-                        outputPositionX = 32f,
-                        outputPositionY = 32f,
+                        outputWidth = 64,
+                        outputHeight = 64,
+                        outputPositionX = playerWorldX,
+                        outputPositionY = playerWorldY - 64,
                     )
+
                     Input.KeyboardS -> drawSprite(
                         sprite = sprites["Keyboard_S"]!!,
-                        outputPositionX = 32f,
-                        outputPositionY = 32f,
+                        outputWidth = 64,
+                        outputHeight = 64,
+                        outputPositionX = playerWorldX,
+                        outputPositionY = playerWorldY - 64,
                     )
+
                     else -> {}
                 }
             }

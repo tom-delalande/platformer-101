@@ -18,6 +18,12 @@ data class Sprite(
 
 val sprites: Map<String, Sprite> by lazy {
     mapOf(
+        "End_Idle" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Items/Checkpoints/End/End (Idle).png"),
+            numberOfFrames = 1,
+            width = 64,
+            height = 64,
+        ),
         "Keyboard_W" to Sprite(
             texture = LoadTexture("Assets/Inputs/Keyboard_Mouse/Dark/T_W_Key_Dark.png"),
             numberOfFrames = 1,

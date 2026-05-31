@@ -1,5 +1,6 @@
 package logic
 
+import engine.engineData
 import kotlinx.serialization.Serializable
 
 var model = Model()
@@ -35,6 +36,26 @@ data class Model(
             outputWidth = 64,
             outputHeight = 64,
         ),
+        UIElement(
+            sprite = Entity.Finish,
+            inputWidth = 64,
+            inputHeight = 64,
+            outputPositionX = 256,
+            outputPositionY = 0,
+            outputWidth = 64,
+            outputHeight = 64,
+        ),
+        UIElement(
+            sprite = Entity.WoodBox,
+            inputX = 0,
+            inputY = 64,
+            inputWidth = 48,
+            inputHeight = 48,
+            outputPositionX = 320,
+            outputPositionY = 0,
+            outputWidth = 64,
+            outputHeight = 64,
+        ),
     ),
     var selectedUIElement: UIElement? = null,
 
@@ -52,9 +73,23 @@ data class Model(
     var playerVelocityY: Float = 0.0f,
     var playerIsGrounded: Boolean = true,
     var playerIsJumping: Boolean = false,
+    var playerDirection: Int = 1,
 
     var playerCurrentAnimationFrame: Int = 0,
+
+    var backgroundOffsetY: Int = 0,
 )
+
+val tileSize = 64
+
+val playerEntity: MapEntity
+    get() = model.map.first { it.entity == Entity.Player
+}
+val playerWorldX: Float
+    get() = playerEntity.gridPositionX * tileSize + model.playerPositionX
+
+val playerWorldY: Float
+    get() = (engineData.windowHeight / tileSize) * tileSize - playerEntity.gridPositionY * tileSize + model.playerPositionY
 
 @Serializable
 data class MapEntity(
@@ -86,6 +121,8 @@ enum class Entity {
     Terrain,
     Player,
     RockHead,
+    Finish,
+    WoodBox,
 
     PlayerRun,
     PlayerJump,
@@ -94,22 +131,38 @@ enum class Entity {
 
 fun Entity.getSpriteData() = when (this) {
     Entity.Terrain -> SpriteData(
-        inputX = 96,
+        inputX = 98,
         inputY = 0,
-        inputWidth = 48,
-        inputHeight = 48,
+        inputWidth = 44,
+        inputHeight = 44,
     )
+
     Entity.Player -> SpriteData(
         inputX = 0,
         inputY = 0,
         inputWidth = 32,
         inputHeight = 32,
     )
+
     Entity.RockHead -> SpriteData(
         inputX = 0,
         inputY = 0,
         inputWidth = 42,
         inputHeight = 42,
+    )
+
+    Entity.Finish -> SpriteData(
+        inputX = 0,
+        inputY = 0,
+        inputWidth = 64,
+        inputHeight = 64,
+    )
+
+    Entity.WoodBox -> SpriteData(
+        inputX = 0,
+        inputY = 64,
+        inputWidth = 48,
+        inputHeight = 48,
     )
 
     else -> SpriteData()

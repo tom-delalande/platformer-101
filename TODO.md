@@ -6,3 +6,5 @@
 - Save multiple levels
 
 # Bugs
+
+- Player snaps to middle of block when landing in the first half of it, sometimes

@@ -13,7 +13,7 @@ import raylib.*
 
 
 fun main() = runBlocking {
-    InitWindow(800, 450, "Hello Kotlin + Raylib")
+    InitWindow(engineData.windowWidth, engineData.windowHeight, "Hello Kotlin + Raylib")
     SetTargetFPS(60)
     engineInit()
     gameInit()

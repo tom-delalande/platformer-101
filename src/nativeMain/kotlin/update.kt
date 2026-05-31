@@ -1,3 +1,4 @@
+import engine.color
 import engine.drawSprite
 import engine.engineData
 import engine.sprites
@@ -10,6 +11,9 @@ import logic.Input
 import logic.MapEntity
 import logic.SceneType
 import logic.model
+import raylib.BeginDrawing
+import raylib.DrawRectangle
+import raylib.EndDrawing
 
 val json = Json { prettyPrint = true }
 
@@ -63,7 +67,7 @@ fun update() {
         SceneType.Play -> {
             val speed = 2f
             val maxVelocity = 10f
-            val friction = 0.2f
+            val friction = 1f
 
             if (Input.KeyboardD.isPressed()) {
                 model.playerVelocityX = min(model.playerVelocityX + speed, maxVelocity)
@@ -86,19 +90,47 @@ fun update() {
 
             if (!Input.KeyboardW.isPressed() || model.playerVelocityY >= maxJumpVelocity) model.playerIsJumping = false
 
+            // AI-gen: separate X movement from Y movement to prevent edge-landing bug
             model.playerPositionX += model.playerVelocityX
-            model.playerPositionY -= model.playerVelocityY // y is inverse
 
-            // AI-1: handle collisions and set player is grounded here using model.map (which stores all the coordinates of blocks) and model.playerPositionX and model.playerPositionY
-            // Player position is using the pixel value, while the map block use the co-ordiates with bottom left being 0,0
-            // Player should collide with and walk on all blocks
+            // AI-gen: handle collisions using separate X then Y resolution
             val playerEntity = model.map.find { it.entity == Entity.Player }
             if (playerEntity != null) {
-                val terrainBlocks = model.map.filter { it.entity == Entity.Terrain }
+                val terrainBlocks = model.map.filter { it.entity == Entity.Terrain || it.entity == Entity.WoodBox }
                 val tileSize = 64f
 
-                model.playerIsGrounded = false
+                val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
+                val pWorldY = playerEntity.gridPositionY * tileSize - model.playerPositionY
+                // AI-gen: resolve X collisions first (no axis-picking ambiguity)
+                for (block in terrainBlocks) {
 
+                    val playerRight = pWorldX + tileSize
+                    val playerTop = pWorldY + tileSize
+
+                    val blockLeft = block.gridPositionX * tileSize
+                    val blockRight = blockLeft + tileSize
+                    val blockBottom = block.gridPositionY * tileSize
+                    val blockTop = blockBottom + tileSize
+
+                    if (playerRight > blockLeft && pWorldX < blockRight &&
+                        playerTop > blockBottom && pWorldY < blockTop
+                    ) {
+                        val overlapLeft = playerRight - blockLeft
+                        val overlapRight = blockRight - pWorldX
+                        if (overlapLeft < overlapRight) {
+                            model.playerPositionX = blockLeft - tileSize - playerEntity.gridPositionX * tileSize
+                        } else {
+                            model.playerPositionX = blockRight - playerEntity.gridPositionX * tileSize
+                        }
+                        model.playerVelocityX = 0f
+                    }
+                }
+
+                // AI-gen: now move Y separately
+                model.playerPositionY -= model.playerVelocityY
+
+                // AI-gen: grounded check (snap Y to block top if within tolerance)
+                model.playerIsGrounded = false
                 val groundedTolerance = 2f
                 for (block in terrainBlocks) {
                     val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
@@ -116,10 +148,12 @@ fun update() {
                     ) {
                         model.playerIsGrounded = true
                         model.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
+                        model.playerVelocityY = 0f
                         break
                     }
                 }
 
+                // AI-gen: resolve Y collisions (only vertical, no more axis-picking)
                 for (block in terrainBlocks) {
                     val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
                     val pWorldY = playerEntity.gridPositionY * tileSize - model.playerPositionY
@@ -135,44 +169,33 @@ fun update() {
                     if (playerRight > blockLeft && pWorldX < blockRight &&
                         playerTop > blockBottom && pWorldY < blockTop
                     ) {
-                        val overlapLeft = playerRight - blockLeft
-                        val overlapRight = blockRight - pWorldX
-                        val overlapBottom = playerTop - blockBottom
                         val overlapTop = blockTop - pWorldY
-
-                        val minOverlapX = min(overlapLeft, overlapRight)
-                        val minOverlapY = min(overlapBottom, overlapTop)
-
-                        if (minOverlapX < minOverlapY) {
-                            if (overlapLeft < overlapRight) {
-                                model.playerPositionX = blockLeft - tileSize - playerEntity.gridPositionX * tileSize
-                            } else {
-                                model.playerPositionX = blockRight - playerEntity.gridPositionX * tileSize
-                            }
+                        val overlapBottom = playerTop - blockBottom
+                        if (overlapTop < overlapBottom) {
+                            model.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
+                            model.playerVelocityY = 0f
+                            model.playerIsGrounded = true
                         } else {
-                            if (overlapTop < overlapBottom) {
-                                model.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
-                                model.playerVelocityY = 0f
-                                model.playerIsGrounded = true
-                            } else {
-                                model.playerPositionY = playerEntity.gridPositionY * tileSize - (blockBottom - tileSize)
-                                model.playerVelocityY = 0f
-                            }
+                            model.playerPositionY = playerEntity.gridPositionY * tileSize - (blockBottom - tileSize)
+                            model.playerVelocityY = 0f
                         }
                     }
                 }
             }
-            // \AI-1
+            // AI-gen: end collision
 
             if (model.playerVelocityX > 0) {
+                model.playerDirection = 1
                 model.playerVelocityX = max(model.playerVelocityX - friction, 0f)
-            } else {
+            } else if (model.playerVelocityX < 0) {
+                model.playerDirection = -1
                 model.playerVelocityX = min(model.playerVelocityX + friction, 0f)
             }
             if (!model.playerIsGrounded) {
                 model.playerVelocityY -= gravity
             }
             model.playerCurrentAnimationFrame += 1
+            model.backgroundOffsetY -= 1
 
             if (Input.KeyboardE.isNewlyPressed()) {
                 model.sceneType = SceneType.Editor
