@@ -187,6 +187,33 @@ fun render() {
             } else {
                 println("WARN: no player entity set in map")
             }
+
+            model.isPressed.forEach {
+                when (it) {
+                    Input.KeyboardW -> drawSprite(
+                        sprite = sprites["Keyboard_W"]!!,
+                        outputPositionX = 32f,
+                        outputPositionY = 32f,
+                    )
+
+                    Input.KeyboardA -> drawSprite(
+                        sprite = sprites["Keyboard_A"]!!,
+                        outputPositionX = 32f,
+                        outputPositionY = 32f,
+                    )
+                    Input.KeyboardD -> drawSprite(
+                        sprite = sprites["Keyboard_D"]!!,
+                        outputPositionX = 32f,
+                        outputPositionY = 32f,
+                    )
+                    Input.KeyboardS -> drawSprite(
+                        sprite = sprites["Keyboard_S"]!!,
+                        outputPositionX = 32f,
+                        outputPositionY = 32f,
+                    )
+                    else -> {}
+                }
+            }
         }
     }
     EndDrawing()
@@ -212,6 +239,37 @@ fun drawSprite(
             y = inputY.toFloat()
             width = inputWidth.toFloat()
             height = inputHeight.toFloat()
+        },
+        dest = cValue<Rectangle> {
+            x = outputPositionX
+            y = outputPositionY
+            width = outputWidth.toFloat()
+            height = outputHeight.toFloat()
+        },
+        origin = cValue<Vector2> {
+            x = 0f
+            y = 0f
+        },
+        rotation = 0.0f,
+        tint = tint,
+    )
+}
+
+fun drawSprite(
+    sprite: Sprite,
+    outputPositionX: Float = 0f,
+    outputPositionY: Float = 0f,
+    outputWidth: Int = sprite.width,
+    outputHeight: Int = sprite.height,
+    tint: CValue<Color> = color(255, 255, 255),
+) {
+    DrawTexturePro(
+        texture = sprite.texture,
+        source = cValue<Rectangle> {
+            x = sprite.positionX.toFloat()
+            y = sprite.positionY.toFloat()
+            width = sprite.width.toFloat()
+            height = sprite.height.toFloat()
         },
         dest = cValue<Rectangle> {
             x = outputPositionX

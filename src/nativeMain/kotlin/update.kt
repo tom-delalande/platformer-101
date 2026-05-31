@@ -1,6 +1,9 @@
+import engine.drawSprite
 import engine.engineData
+import engine.sprites
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.serialization.json.Json
 import logic.Entity
 import logic.Input
@@ -8,8 +11,9 @@ import logic.MapEntity
 import logic.SceneType
 import logic.model
 
-private val json = Json { prettyPrint = true }
+val json = Json { prettyPrint = true }
 
+@OptIn(ExperimentalForeignApi::class)
 fun update() {
     when (model.sceneType) {
         SceneType.Editor -> {
@@ -30,7 +34,6 @@ fun update() {
                             entity = model.selectedUIElement!!.sprite
                         )
                     )
-                    println(model.map)
                 }
             }
             if (Input.Mouse2.isNewlyPressed()) {
@@ -96,6 +99,27 @@ fun update() {
 
                 model.playerIsGrounded = false
 
+                val groundedTolerance = 2f
+                for (block in terrainBlocks) {
+                    val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
+                    val pWorldY = playerEntity.gridPositionY * tileSize - model.playerPositionY
+
+                    val playerRight = pWorldX + tileSize
+                    val playerBottom = pWorldY
+
+                    val blockLeft = block.gridPositionX * tileSize
+                    val blockRight = blockLeft + tileSize
+                    val blockTop = block.gridPositionY * tileSize + tileSize
+
+                    if (playerRight > blockLeft && pWorldX < blockRight &&
+                        playerBottom >= blockTop - groundedTolerance && playerBottom <= blockTop + groundedTolerance
+                    ) {
+                        model.playerIsGrounded = true
+                        model.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
+                        break
+                    }
+                }
+
                 for (block in terrainBlocks) {
                     val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
                     val pWorldY = playerEntity.gridPositionY * tileSize - model.playerPositionY
@@ -137,28 +161,8 @@ fun update() {
                         }
                     }
                 }
-
-                val groundedTolerance = 2f
-                for (block in terrainBlocks) {
-                    val pWorldX = playerEntity.gridPositionX * tileSize + model.playerPositionX
-                    val pWorldY = playerEntity.gridPositionY * tileSize - model.playerPositionY
-
-                    val playerRight = pWorldX + tileSize
-                    val playerBottom = pWorldY
-
-                    val blockLeft = block.gridPositionX * tileSize
-                    val blockRight = blockLeft + tileSize
-                    val blockTop = block.gridPositionY * tileSize + tileSize
-
-                    if (playerRight > blockLeft && pWorldX < blockRight &&
-                        playerBottom >= blockTop - groundedTolerance && playerBottom <= blockTop + groundedTolerance
-                    ) {
-                        model.playerIsGrounded = true
-                        model.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
-                        break
-                    }
-                }
             }
+            // \AI-1
 
             if (model.playerVelocityX > 0) {
                 model.playerVelocityX = max(model.playerVelocityX - friction, 0f)
@@ -169,6 +173,10 @@ fun update() {
                 model.playerVelocityY -= gravity
             }
             model.playerCurrentAnimationFrame += 1
+
+            if (Input.KeyboardE.isNewlyPressed()) {
+                model.sceneType = SceneType.Editor
+            }
         }
     }
 }

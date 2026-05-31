@@ -16,6 +16,7 @@ fun main() = runBlocking {
     InitWindow(800, 450, "Hello Kotlin + Raylib")
     SetTargetFPS(60)
     engineInit()
+    gameInit()
 
     while (!WindowShouldClose()) {
         val time = measureTime {

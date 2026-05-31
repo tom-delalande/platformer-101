@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 var model = Model()
 
 data class Model(
-    var sceneType: SceneType = SceneType.Editor,
+    var sceneType: SceneType = SceneType.Play,
     var uiElements: List<UIElement> = listOf(
         UIElement(
             sprite = Entity.Terrain,
