@@ -7,3 +7,6 @@ pluginManagement {
 }
 
 rootProject.name = "platformer-kotlin-raylib"
+
+include(":engine")
+include(":game")
