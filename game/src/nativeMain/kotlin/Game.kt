@@ -2,7 +2,6 @@ package game
 
 import kotlin.math.max
 import kotlin.math.min
-import kotlinx.serialization.json.Json
 
 
 object Game {
@@ -36,7 +35,7 @@ object Game {
                         GameState.map += MapEntity(
                             gridPositionX = gridX,
                             gridPositionY = gridY,
-                            entity = GameState.selectedUIElement!!.entity
+                            entity = GameState.selectedUIElement!!.entityType
                         )
                     }
                 }
@@ -50,7 +49,7 @@ object Game {
                     }
                     val gridY =
                         (GameState.windowHeight - GameState.mousePositionY + GameState.TILE_SIZE) / GameState.TILE_SIZE
-                    GameState.map = GameState.map.filterNot { it.gridPositionX == gridX && it.gridPositionY == gridY }
+                    GameState.map = GameState.map.filterNot { it.gridPositionX == gridX && it.gridPositionY == gridY }.toMutableList()
                 }
 
                 if (Input.KeyboardS.isNewlyPressed()) {
@@ -83,14 +82,28 @@ object Game {
                     GameState.playerVelocityX = max(GameState.playerVelocityX - speed, -maxVelocity)
                 }
 
-                GameState.map.map { mapEntity ->
+                GameState.map.toList().map { mapEntity ->
                     Physics.executeIfPlayerIsCollidingWithTile(mapEntity) { _, _, _ ->
                         when (mapEntity.entity) {
-                            Entity.Finish -> {
+                            EntityType.Finish -> {
                                 val currentMapIndex = Map.maps.indexOfFirst { it == GameState.currentMap }
                                 val nextMap = Map.maps.getOrNull(currentMapIndex + 1)
                                 if (nextMap != null) {
                                     GameState.loadMap(nextMap)
+                                }
+                            }
+
+                            EntityType.Strawberry -> {
+                                val renderable = GameState.renderables.first { it.mapEntity == mapEntity }
+                                if (renderable !is Animation) return@executeIfPlayerIsCollidingWithTile
+                                // THIS IS A BAD WAY TO DO THIS, THESE NEED TO BE TRACKED IN THE ACTUAL ENTITY CLASS
+                                // NOT USING SPRITES TO GUESS THE STATE
+                                if (renderable.currentSprite == Sprite.sprites["Item_Collected"]!!) return@executeIfPlayerIsCollidingWithTile
+                                renderable.currentSprite = Sprite.sprites["Item_Collected"]!!
+                                renderable.currentFrame = 0
+                                renderable.onFinish = {
+                                    GameState.map.remove(mapEntity)
+                                    GameState.renderables.remove(renderable)
                                 }
                             }
 
@@ -142,10 +155,10 @@ object Game {
             }
         }
         // Animate entities
-        GameState.renderables.forEach {
+        GameState.renderables.toList().forEach {
             if (it is Animation) {
-                it.currentFrame += 1
                 if (it.currentFrame > it.currentSprite.numberOfFrames) it.onFinish(it)
+                it.currentFrame += 1
             }
         }
     }
@@ -155,14 +168,14 @@ object Game {
         GameState.playerPositionX += GameState.playerVelocityX
 
         // AI-gen: handle collisions using separate X then Y resolution
-        val playerEntity = GameState.map.find { it.entity == Entity.Player }
-        if (playerEntity != null) {
+        val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
+        if (playerEntityType != null) {
             val terrainBlocks =
-                GameState.map.filter { it.entity == Entity.Terrain || it.entity == Entity.WoodBox }
+                GameState.map.filter { it.entity == EntityType.Terrain || it.entity == EntityType.WoodBox }
             val tileSize = 64f
 
-            val pWorldX = playerEntity.gridPositionX * tileSize + GameState.playerPositionX
-            val pWorldY = playerEntity.gridPositionY * tileSize - GameState.playerPositionY
+            val pWorldX = playerEntityType.gridPositionX * tileSize + GameState.playerPositionX
+            val pWorldY = playerEntityType.gridPositionY * tileSize - GameState.playerPositionY
             // AI-gen: resolve X collisions first (no axis-picking ambiguity)
             for (block in terrainBlocks) {
 
@@ -180,9 +193,9 @@ object Game {
                     val overlapLeft = playerRight - blockLeft
                     val overlapRight = blockRight - pWorldX
                     if (overlapLeft < overlapRight) {
-                        GameState.playerPositionX = blockLeft - tileSize - playerEntity.gridPositionX * tileSize
+                        GameState.playerPositionX = blockLeft - tileSize - playerEntityType.gridPositionX * tileSize
                     } else {
-                        GameState.playerPositionX = blockRight - playerEntity.gridPositionX * tileSize
+                        GameState.playerPositionX = blockRight - playerEntityType.gridPositionX * tileSize
                     }
                     GameState.playerVelocityX = 0f
                 }
@@ -195,8 +208,8 @@ object Game {
             GameState.playerIsGrounded = false
             val groundedTolerance = 2f
             for (block in terrainBlocks) {
-                val pWorldX = playerEntity.gridPositionX * tileSize + GameState.playerPositionX
-                val pWorldY = playerEntity.gridPositionY * tileSize - GameState.playerPositionY
+                val pWorldX = playerEntityType.gridPositionX * tileSize + GameState.playerPositionX
+                val pWorldY = playerEntityType.gridPositionY * tileSize - GameState.playerPositionY
 
                 val playerRight = pWorldX + tileSize
                 val playerBottom = pWorldY
@@ -209,7 +222,7 @@ object Game {
                     playerBottom >= blockTop - groundedTolerance && playerBottom <= blockTop + groundedTolerance
                 ) {
                     GameState.playerIsGrounded = true
-                    GameState.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
+                    GameState.playerPositionY = playerEntityType.gridPositionY * tileSize - blockTop
                     GameState.playerVelocityY = 0f
                     break
                 }
@@ -217,8 +230,8 @@ object Game {
 
             // AI-gen: resolve Y collisions (only vertical, no more axis-picking)
             for (block in terrainBlocks) {
-                val pWorldX = playerEntity.gridPositionX * tileSize + GameState.playerPositionX
-                val pWorldY = playerEntity.gridPositionY * tileSize - GameState.playerPositionY
+                val pWorldX = playerEntityType.gridPositionX * tileSize + GameState.playerPositionX
+                val pWorldY = playerEntityType.gridPositionY * tileSize - GameState.playerPositionY
 
                 val playerRight = pWorldX + tileSize
                 val playerTop = pWorldY + tileSize
@@ -234,12 +247,12 @@ object Game {
                     val overlapTop = blockTop - pWorldY
                     val overlapBottom = playerTop - blockBottom
                     if (overlapTop < overlapBottom) {
-                        GameState.playerPositionY = playerEntity.gridPositionY * tileSize - blockTop
+                        GameState.playerPositionY = playerEntityType.gridPositionY * tileSize - blockTop
                         GameState.playerVelocityY = 0f
                         GameState.playerIsGrounded = true
                     } else {
                         GameState.playerPositionY =
-                            playerEntity.gridPositionY * tileSize - (blockBottom - tileSize)
+                            playerEntityType.gridPositionY * tileSize - (blockBottom - tileSize)
                         GameState.playerVelocityY = 0f
                     }
                 }

@@ -1,15 +1,18 @@
 package game
 
-sealed interface Renderable
+sealed interface Renderable {
+    val mapEntity: MapEntity
+    var currentSprite: Sprite.Sprite
+}
 
 data class Animation(
-    val mapEntity: MapEntity,
+    override val mapEntity: MapEntity,
+    override var currentSprite: Sprite.Sprite,
     var currentFrame: Int,
-    val currentSprite: Sprite.Sprite,
-    val onFinish: (Animation) -> Unit,
+    var onFinish: (Animation) -> Unit,
 ) : Renderable
 
 data class Static(
-    val mapEntity: MapEntity,
-    val currentSprite: Sprite.Sprite,
+    override val mapEntity: MapEntity,
+    override var currentSprite: Sprite.Sprite,
 ) : Renderable

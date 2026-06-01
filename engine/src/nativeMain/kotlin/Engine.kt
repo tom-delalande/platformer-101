@@ -2,7 +2,7 @@
 
 import engine.color
 import game.Animation
-import game.Entity
+import game.EntityType
 import game.GameState
 import game.Input
 import game.SceneType
@@ -149,8 +149,8 @@ object Engine {
                         )
                     }
                 }
-                val playerEntity = GameState.map.find { it.entity == Entity.Player }
-                if (playerEntity != null) {
+                val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
+                if (playerEntityType != null) {
                     val sprite = when {
                         GameState.playerVelocityY > 0 -> Sprite.sprites["Player_Jump"]
                         GameState.playerVelocityY < 0 -> Sprite.sprites["Player_Fall"]
@@ -161,8 +161,8 @@ object Engine {
                     Render.drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
-                        outputPositionX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX - GameState.cameraOffsetX,
-                        outputPositionY = (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntity.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY,
+                        outputPositionX = playerEntityType.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX - GameState.cameraOffsetX,
+                        outputPositionY = (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntityType.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY,
                         outputWidth = 64,
                         outputHeight = 64,
                         currentFrame = GameState.playerCurrentAnimationFrame
@@ -175,9 +175,9 @@ object Engine {
                     val totalWidth =
                         pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
 
-                    val playerWorldX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX
+                    val playerWorldX = playerEntityType.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX
                     val playerWorldY =
-                        (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntity.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY
+                        (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntityType.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY
                     val startX = playerWorldX + (64 - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->

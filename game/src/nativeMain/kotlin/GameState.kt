@@ -7,7 +7,7 @@ object GameState {
     var windowWidth: Int = 800
     var uiElements: List<UIElement> = listOf(
         UIElement(
-            entity = Entity.Terrain,
+            entityType = EntityType.Terrain,
             sprite = Sprite.sprites["Terrain"]!!,
             outputPositionX = 64,
             outputPositionY = 0,
@@ -15,7 +15,7 @@ object GameState {
             outputHeight = 64,
         ),
         UIElement(
-            entity = Entity.Player,
+            entityType = EntityType.Player,
             sprite = Sprite.sprites["Player_Idle"]!!,
             outputPositionX = 128,
             outputPositionY = 0,
@@ -23,7 +23,7 @@ object GameState {
             outputHeight = 64,
         ),
         UIElement(
-            entity = Entity.RockHead,
+            entityType = EntityType.RockHead,
             sprite = Sprite.sprites["RockHead"]!!,
             outputPositionX = 192,
             outputPositionY = 0,
@@ -31,7 +31,7 @@ object GameState {
             outputHeight = 64,
         ),
         UIElement(
-            entity = Entity.Finish,
+            entityType = EntityType.Finish,
             sprite = Sprite.sprites["Finish"]!!,
             outputPositionX = 256,
             outputPositionY = 0,
@@ -39,7 +39,7 @@ object GameState {
             outputHeight = 64,
         ),
         UIElement(
-            entity = Entity.WoodBox,
+            entityType = EntityType.WoodBox,
             sprite = Sprite.sprites["WoodBox"]!!,
             outputPositionX = 320,
             outputPositionY = 0,
@@ -47,7 +47,7 @@ object GameState {
             outputHeight = 64,
         ),
         UIElement(
-            entity = Entity.Strawberry,
+            entityType = EntityType.Strawberry,
             sprite = Sprite.sprites["Strawberry"]!!,
             outputPositionX = 384,
             outputPositionY = 0,
@@ -64,7 +64,7 @@ object GameState {
     var mousePositionX: Int = 0
     var mousePositionY: Int = 0
 
-    var map: List<MapEntity> = listOf()
+    var map: MutableList<MapEntity> = mutableListOf()
 
     var playerPositionX: Float = 0.0f
     var playerPositionY: Float = 0.0f
@@ -98,7 +98,7 @@ object GameState {
 
         renderables = map.mapNotNull { mapEntity ->
             when (mapEntity.entity) {
-                Entity.Strawberry -> {
+                EntityType.Strawberry -> {
                     Animation(
                         mapEntity = mapEntity,
                         currentFrame = 0,
@@ -109,9 +109,9 @@ object GameState {
                     )
                 }
 
-                Entity.Background -> Static(mapEntity, Sprite.sprites["Background"]!!)
-                Entity.Terrain -> Static(mapEntity, Sprite.sprites["Terrain"]!!)
-                Entity.Player -> when (sceneType) {
+                EntityType.Background -> Static(mapEntity, Sprite.sprites["Background"]!!)
+                EntityType.Terrain -> Static(mapEntity, Sprite.sprites["Terrain"]!!)
+                EntityType.Player -> when (sceneType) {
                     SceneType.Editor -> Animation(
                         mapEntity = mapEntity,
                         currentFrame = 0,
@@ -122,9 +122,9 @@ object GameState {
                     )
                     SceneType.Play -> null
                 }
-                Entity.RockHead -> Static(mapEntity, Sprite.sprites["RockHead"]!!)
-                Entity.Finish -> Static(mapEntity, Sprite.sprites["Finish"]!!)
-                Entity.WoodBox -> Static(mapEntity, Sprite.sprites["WoodBox"]!!)
+                EntityType.RockHead -> Static(mapEntity, Sprite.sprites["RockHead"]!!)
+                EntityType.Finish -> Static(mapEntity, Sprite.sprites["Finish"]!!)
+                EntityType.WoodBox -> Static(mapEntity, Sprite.sprites["WoodBox"]!!)
             }
         }.toMutableList()
     }

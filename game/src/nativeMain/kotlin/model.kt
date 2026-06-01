@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class MapEntity(
     val gridPositionX: Int,
     val gridPositionY: Int,
-    val entity: Entity,
+    val entity: EntityType,
 )
 
 enum class SceneType {
@@ -15,7 +15,7 @@ enum class SceneType {
 }
 
 data class UIElement(
-    val entity: Entity,
+    val entityType: EntityType,
     val sprite: Sprite.Sprite,
     val outputPositionX: Int,
     val outputPositionY: Int,
@@ -24,7 +24,7 @@ data class UIElement(
 )
 
 @Serializable
-enum class Entity {
+enum class EntityType {
     Background,
     Terrain,
     Player,
@@ -34,3 +34,7 @@ enum class Entity {
     Strawberry,
 }
 
+data class Entity(
+    val type: EntityType,
+    val isDestroying: Boolean,
+)
