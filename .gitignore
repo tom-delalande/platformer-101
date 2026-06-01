@@ -3,3 +3,7 @@
 .kotlin
 build
 .DS_Store
+
+# Batocera packaging output
+build/batocera/
+build/docker/

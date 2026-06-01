@@ -1,5 +1,3 @@
-val isLinux = System.getProperty("os.name").lowercase().contains("linux")
-
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
@@ -11,6 +9,7 @@ repositories {
 
 kotlin {
     macosArm64()
+    // linuxX64 target added by AI (claude-3.5-sonnet) for Batocera deployment
     linuxX64()
 
     macosArm64 {
@@ -51,21 +50,25 @@ kotlin {
         }
     }
 
+    // linuxX64 configuration block was AI-generated (claude-3.5-sonnet)
     linuxX64 {
         compilations.getByName("main") {
             cinterops {
                 val raylib by creating {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/raylib.def"))
                     packageName("raylib")
-                    compilerOpts("-I/opt/homebrew/include")
+                    compilerOpts("-I/usr/include", "-I/usr/local/include")
                 }
             }
         }
-        if (isLinux) {
-            binaries {
-                executable {
-                    entryPoint = "main"
-                    linkerOpts("-lraylib")
+        binaries {
+            executable {
+                entryPoint = "main"
+                // AI-generated (claude-3.5-sonnet) linker flags for raylib on Linux
+                linkerOpts("-L/usr/local/lib", "-lraylib")
+                // AI-generated (claude-3.5-sonnet) runTask config for working dir
+                runTaskProvider?.configure {
+                    workingDir = rootProject.layout.projectDirectory.asFile
                 }
             }
         }

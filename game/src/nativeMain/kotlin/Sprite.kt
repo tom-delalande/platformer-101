@@ -45,6 +45,42 @@ object Sprite {
                 width = 128,
                 height = 128,
             ),
+            "Switch_A" to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_A.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            "Switch_B" to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_A.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            "Switch_Left" to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Left.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            "Switch_Right" to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Right.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            "Switch_Up" to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Up.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            "Switch_Down" to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Down.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
             "Background" to Sprite(
                 texture = "Assets/Pixel Adventure/Background/Yellow.png",
                 numberOfFrames = 1,
