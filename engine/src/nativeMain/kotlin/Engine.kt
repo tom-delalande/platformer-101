@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-import engine.Sprite
+import Render.toDefaultSprite
 import engine.color
 import engine.sprites
 import game.Entity
@@ -9,15 +9,11 @@ import game.Input
 import game.SceneType
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
-import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.cValue
 import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
 import raylib.BeginDrawing
 import raylib.ClearBackground
-import raylib.Color
-import raylib.DrawTexturePro
 import raylib.EndDrawing
 import raylib.GetMousePosition
 import raylib.InitWindow
@@ -32,16 +28,13 @@ import raylib.KEY_S
 import raylib.KEY_W
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
-import raylib.Rectangle
 import raylib.SetTargetFPS
-import raylib.Vector2
-
-private val RAYWHITE = color(245, 245, 245)
 
 object Engine {
     const val WINDOW_WIDTH: Int = 800
     const val WINDOW_HEIGHT: Int = 600
     const val TARGET_FPS = 30
+    private val RAYWHITE = color(245, 245, 245)
 
     fun init() {
         InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Hello Kotlin + Raylib")
@@ -75,7 +68,7 @@ object Engine {
         // Render Background
         (0..WINDOW_WIDTH.div(64)).forEach { xOffset ->
             (0..WINDOW_HEIGHT.div(64)).forEach { yOffset ->
-                drawSprite(
+                Render.drawSprite(
                     sprite = sprites["Background"]!!,
                     inputXOffset = GameState.cameraOffsetX,
                     inputYOffset = GameState.backgroundOffsetY,
@@ -88,7 +81,7 @@ object Engine {
         when (GameState.sceneType) {
             SceneType.Editor -> {
                 GameState.map.forEach {
-                    drawSprite(
+                    Render.drawSprite(
                         sprite = it.entity.toDefaultSprite(),
                         outputPositionX = (it.gridPositionX * 64f) - GameState.cameraOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.gridPositionY * 64f,
@@ -98,7 +91,7 @@ object Engine {
                 }
 
                 if (GameState.selectedUIElement != null) {
-                    drawSprite(
+                    Render.drawSprite(
                         sprite = GameState.selectedUIElement!!.entity.toDefaultSprite(),
                         outputPositionX = (GameState.mousePositionX - 32f),
                         outputPositionY = GameState.mousePositionY - 32f,
@@ -109,7 +102,7 @@ object Engine {
                 }
 
                 GameState.uiElements.forEach {
-                    drawSprite(
+                    Render.drawSprite(
                         sprite = it.entity.toDefaultSprite(),
                         outputPositionX = it.outputPositionX.toFloat(),
                         outputPositionY = it.outputPositionY.toFloat(),
@@ -121,7 +114,7 @@ object Engine {
 
             SceneType.Play -> {
                 GameState.map.filter { it.entity != Entity.Player }.forEach {
-                    drawSprite(
+                    Render.drawSprite(
                         sprite = it.entity.toDefaultSprite(),
                         outputPositionX = (it.gridPositionX * 64f) - GameState.cameraOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.gridPositionY * 64f,
@@ -138,7 +131,7 @@ object Engine {
                         GameState.playerVelocityY == 0f && GameState.playerVelocityX == 0f -> sprites["Player_Idle"]
                         else -> sprites["Player_Idle"]
                     }
-                    drawSprite(
+                    Render.drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
                         outputPositionX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX - GameState.cameraOffsetX,
@@ -163,7 +156,7 @@ object Engine {
                     pressedKeys.forEachIndexed { index, key ->
                         val x = startX + index * (keyIconSize + gapBetweenKeys) - GameState.cameraOffsetX
                         when (key) {
-                            Input.KeyboardW -> drawSprite(
+                            Input.KeyboardW -> Render.drawSprite(
                                 sprite = sprites["Keyboard_W"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
@@ -171,7 +164,7 @@ object Engine {
                                 outputPositionY = playerWorldY - 64,
                             )
 
-                            Input.KeyboardA -> drawSprite(
+                            Input.KeyboardA -> Render.drawSprite(
                                 sprite = sprites["Keyboard_A"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
@@ -179,7 +172,7 @@ object Engine {
                                 outputPositionY = playerWorldY - 64,
                             )
 
-                            Input.KeyboardD -> drawSprite(
+                            Input.KeyboardD -> Render.drawSprite(
                                 sprite = sprites["Keyboard_D"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
@@ -187,7 +180,7 @@ object Engine {
                                 outputPositionY = playerWorldY - 64,
                             )
 
-                            Input.KeyboardS -> drawSprite(
+                            Input.KeyboardS -> Render.drawSprite(
                                 sprite = sprites["Keyboard_S"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
@@ -216,48 +209,4 @@ object Engine {
             delay((1000 / TARGET_FPS).milliseconds - time)
         }
     }
-}
-
-fun Entity.toDefaultSprite() = when (this) {
-    Entity.Background -> sprites["Background"]!!
-    Entity.Terrain -> sprites["Terrain"]!!
-    Entity.Player -> sprites["Player_Idle"]!!
-    Entity.RockHead -> sprites["RockHead"]!!
-    Entity.Finish -> sprites["Finish"]!!
-    Entity.WoodBox -> sprites["WoodBox"]!!
-}
-
-fun drawSprite(
-    sprite: Sprite,
-    outputPositionX: Float = 0f,
-    outputPositionY: Float = 0f,
-    outputWidth: Int = sprite.width,
-    outputHeight: Int = sprite.height,
-    tint: CValue<Color> = color(255, 255, 255),
-    inputXOffset: Int = 0,
-    inputYOffset: Int = 0,
-    flipHorizontally: Boolean = false,
-    currentFrame: Int = 0,
-) {
-    DrawTexturePro(
-        texture = sprite.texture,
-        source = cValue<Rectangle> {
-            x = (sprite.positionX.toFloat() + inputXOffset) + sprite.width * (currentFrame % sprite.numberOfFrames)
-            y = (sprite.positionY + inputYOffset).toFloat()
-            width = if (flipHorizontally) sprite.width.toFloat() * -1 else sprite.width.toFloat()
-            height = sprite.height.toFloat()
-        },
-        dest = cValue<Rectangle> {
-            x = outputPositionX
-            y = outputPositionY
-            width = outputWidth.toFloat()
-            height = outputHeight.toFloat()
-        },
-        origin = cValue<Vector2> {
-            x = 0f
-            y = 0f
-        },
-        rotation = 0.0f,
-        tint = tint,
-    )
 }
