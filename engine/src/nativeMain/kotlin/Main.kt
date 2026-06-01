@@ -1,7 +1,7 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
 import Engine.executeWithFixedFrameRate
-import engine.sprites
+import engine.textures
 import game.Game
 import game.SceneType
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -35,8 +35,8 @@ fun main() = runBlocking {
         }
     }
 
-    sprites.forEach {
-        UnloadTexture(it.value.texture)
+    textures.forEach {
+        UnloadTexture(it.second)
     }
     CloseWindow()
 }

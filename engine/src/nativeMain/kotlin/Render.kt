@@ -1,9 +1,8 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-import engine.Sprite
 import engine.color
-import engine.sprites
-import game.Entity
+import engine.toTexture
+import game.Sprite
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cValue
@@ -13,18 +12,8 @@ import raylib.Rectangle
 import raylib.Vector2
 
 object Render {
-    // Probably a game function
-    fun Entity.toDefaultSprite() = when (this) {
-        Entity.Background -> sprites["Background"]!!
-        Entity.Terrain -> sprites["Terrain"]!!
-        Entity.Player -> sprites["Player_Idle"]!!
-        Entity.RockHead -> sprites["RockHead"]!!
-        Entity.Finish -> sprites["Finish"]!!
-        Entity.WoodBox -> sprites["WoodBox"]!!
-    }
-
     fun drawSprite(
-        sprite: Sprite,
+        sprite: Sprite.Sprite,
         outputPositionX: Float = 0f,
         outputPositionY: Float = 0f,
         outputWidth: Int = sprite.width,
@@ -36,7 +25,7 @@ object Render {
         currentFrame: Int = 0,
     ) {
         DrawTexturePro(
-            texture = sprite.texture,
+            texture = sprite.toTexture(),
             source = cValue<Rectangle> {
                 x = (sprite.positionX.toFloat() + inputXOffset) + sprite.width * (currentFrame % sprite.numberOfFrames)
                 y = (sprite.positionY + inputYOffset).toFloat()

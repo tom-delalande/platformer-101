@@ -6,6 +6,7 @@ object Map {
     val maps = listOf(
         "Assets/Maps/1_1.json",
         "Assets/Maps/1_2.json",
+        "Assets/Maps/1_3.json",
     )
 
     fun load() {

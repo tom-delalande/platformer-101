@@ -1,12 +1,13 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-import Render.toDefaultSprite
 import engine.color
-import engine.sprites
+import game.Animation
 import game.Entity
 import game.GameState
 import game.Input
 import game.SceneType
+import game.Sprite
+import game.Static
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -69,7 +70,7 @@ object Engine {
         (0..WINDOW_WIDTH.div(64)).forEach { xOffset ->
             (0..WINDOW_HEIGHT.div(64)).forEach { yOffset ->
                 Render.drawSprite(
-                    sprite = sprites["Background"]!!,
+                    sprite = Sprite.sprites["Background"]!!,
                     inputXOffset = GameState.cameraOffsetX,
                     inputYOffset = GameState.backgroundOffsetY,
                     outputPositionX = xOffset * 64f,
@@ -80,19 +81,32 @@ object Engine {
 
         when (GameState.sceneType) {
             SceneType.Editor -> {
-                GameState.map.forEach {
-                    Render.drawSprite(
-                        sprite = it.entity.toDefaultSprite(),
-                        outputPositionX = (it.gridPositionX * 64f) - GameState.cameraOffsetX,
-                        outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.gridPositionY * 64f,
-                        outputWidth = 64,
-                        outputHeight = 64,
-                    )
+                GameState.renderables.forEach {
+                    when (it) {
+                        is Animation -> Render.drawSprite(
+                            sprite = it.currentSprite,
+                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
+                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
+                            outputWidth = 64,
+                            outputHeight = 64,
+                            currentFrame = it.currentFrame,
+                        )
+
+                        is Static -> Render.drawSprite(
+                            sprite = it.currentSprite,
+                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
+                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
+                            outputWidth = 64,
+                            outputHeight = 64,
+                            // This is the only difference to above, could probably be simplified with better classes
+                            currentFrame = 0,
+                        )
+                    }
                 }
 
                 if (GameState.selectedUIElement != null) {
                     Render.drawSprite(
-                        sprite = GameState.selectedUIElement!!.entity.toDefaultSprite(),
+                        sprite = GameState.selectedUIElement!!.sprite,
                         outputPositionX = (GameState.mousePositionX - 32f),
                         outputPositionY = GameState.mousePositionY - 32f,
                         outputWidth = 64,
@@ -103,7 +117,7 @@ object Engine {
 
                 GameState.uiElements.forEach {
                     Render.drawSprite(
-                        sprite = it.entity.toDefaultSprite(),
+                        sprite = it.sprite,
                         outputPositionX = it.outputPositionX.toFloat(),
                         outputPositionY = it.outputPositionY.toFloat(),
                         outputWidth = it.outputWidth,
@@ -113,23 +127,36 @@ object Engine {
             }
 
             SceneType.Play -> {
-                GameState.map.filter { it.entity != Entity.Player }.forEach {
-                    Render.drawSprite(
-                        sprite = it.entity.toDefaultSprite(),
-                        outputPositionX = (it.gridPositionX * 64f) - GameState.cameraOffsetX,
-                        outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.gridPositionY * 64f,
-                        outputWidth = 64,
-                        outputHeight = 64,
-                    )
+                GameState.renderables.forEach {
+                    when (it) {
+                        is Animation -> Render.drawSprite(
+                            sprite = it.currentSprite,
+                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
+                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
+                            outputWidth = 64,
+                            outputHeight = 64,
+                            currentFrame = it.currentFrame,
+                        )
+
+                        is Static -> Render.drawSprite(
+                            sprite = it.currentSprite,
+                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
+                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
+                            outputWidth = 64,
+                            outputHeight = 64,
+                            // This is the only difference to above, could probably be simplified with better classes
+                            currentFrame = 0,
+                        )
+                    }
                 }
                 val playerEntity = GameState.map.find { it.entity == Entity.Player }
                 if (playerEntity != null) {
                     val sprite = when {
-                        GameState.playerVelocityY > 0 -> sprites["Player_Jump"]
-                        GameState.playerVelocityY < 0 -> sprites["Player_Fall"]
-                        GameState.playerVelocityX != 0f -> sprites["Player_Run"]
-                        GameState.playerVelocityY == 0f && GameState.playerVelocityX == 0f -> sprites["Player_Idle"]
-                        else -> sprites["Player_Idle"]
+                        GameState.playerVelocityY > 0 -> Sprite.sprites["Player_Jump"]
+                        GameState.playerVelocityY < 0 -> Sprite.sprites["Player_Fall"]
+                        GameState.playerVelocityX != 0f -> Sprite.sprites["Player_Run"]
+                        GameState.playerVelocityY == 0f && GameState.playerVelocityX == 0f -> Sprite.sprites["Player_Idle"]
+                        else -> Sprite.sprites["Player_Idle"]
                     }
                     Render.drawSprite(
                         sprite = sprite!!,
@@ -157,7 +184,7 @@ object Engine {
                         val x = startX + index * (keyIconSize + gapBetweenKeys) - GameState.cameraOffsetX
                         when (key) {
                             Input.KeyboardW -> Render.drawSprite(
-                                sprite = sprites["Keyboard_W"]!!,
+                                sprite = Sprite.sprites["Keyboard_W"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
                                 outputPositionX = x,
@@ -165,7 +192,7 @@ object Engine {
                             )
 
                             Input.KeyboardA -> Render.drawSprite(
-                                sprite = sprites["Keyboard_A"]!!,
+                                sprite = Sprite.sprites["Keyboard_A"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
                                 outputPositionX = x,
@@ -173,7 +200,7 @@ object Engine {
                             )
 
                             Input.KeyboardD -> Render.drawSprite(
-                                sprite = sprites["Keyboard_D"]!!,
+                                sprite = Sprite.sprites["Keyboard_D"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
                                 outputPositionX = x,
@@ -181,7 +208,7 @@ object Engine {
                             )
 
                             Input.KeyboardS -> Render.drawSprite(
-                                sprite = sprites["Keyboard_S"]!!,
+                                sprite = Sprite.sprites["Keyboard_S"]!!,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
                                 outputPositionX = x,
@@ -198,6 +225,7 @@ object Engine {
 
             }
         }
+
         EndDrawing()
     }
 

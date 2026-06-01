@@ -8,10 +8,9 @@ import kotlinx.serialization.json.Json
 object Game {
     fun init(mapUrl: String, sceneType: SceneType, windowHeight: Int, windowWidth: Int) {
         GameState.sceneType = sceneType
-        GameState.currentMap = mapUrl
         GameState.windowHeight = windowHeight
         GameState.windowWidth = windowWidth
-        Map.load()
+        GameState.loadMap(mapUrl)
     }
 
     fun update() {
@@ -61,7 +60,7 @@ object Game {
                     Map.load()
                 }
                 if (Input.KeyboardP.isNewlyPressed()) {
-                    GameState.sceneType = SceneType.Play
+                    GameState.loadMap(sceneType = SceneType.Play)
                 }
                 val cameraMoveSpeed = 10
                 if (Input.KeyboardD.isPressed()) {
@@ -91,15 +90,7 @@ object Game {
                                 val currentMapIndex = Map.maps.indexOfFirst { it == GameState.currentMap }
                                 val nextMap = Map.maps.getOrNull(currentMapIndex + 1)
                                 if (nextMap != null) {
-                                    GameState.currentMap = nextMap
-                                    Map.load()
-                                    GameState.playerPositionX = 0f
-                                    GameState.playerPositionY = 0f
-                                    GameState.playerVelocityX = 0f
-                                    GameState.playerVelocityY = 0f
-                                    GameState.playerIsGrounded = true
-                                    GameState.playerIsJumping = false
-                                    GameState.playerDirection = 1
+                                    GameState.loadMap(nextMap)
                                 }
                             }
 
@@ -143,11 +134,19 @@ object Game {
                     GameState.sceneType = SceneType.Editor
                 }
 
+                // Scroll screen
                 if (GameState.playerPositionX > GameState.windowWidth / 2) {
                     GameState.cameraOffsetX = (GameState.playerPositionX - (GameState.windowWidth / 2)).toInt()
                 }
-            }
 
+            }
+        }
+        // Animate entities
+        GameState.renderables.forEach {
+            if (it is Animation) {
+                it.currentFrame += 1
+                if (it.currentFrame > it.currentSprite.numberOfFrames) it.onFinish(it)
+            }
         }
     }
 

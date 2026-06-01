@@ -1,4 +1,5 @@
 # Features
+
 - Controller support
 - Finish first couple levels
   - Walk to the right
@@ -11,5 +12,6 @@
 - Menu (Very simple)
 - Animation when completing level
 - Clues
+- Stop scrolling when end is in sight
 
 # Bugs
