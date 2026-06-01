@@ -1,0 +1,172 @@
+[
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 9,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 8,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 7,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 6,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 5,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 4,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 4,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 5,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 6,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 7,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 8,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 9,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 3,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 2,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 0,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 1,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 2,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 3,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 4,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 5,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 6,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 7,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 8,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 9,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 10,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 11,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 1,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 3,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 12,
+    "gridPositionY": 2,
+    "entity": "WoodBox"
+  },
+  {
+    "gridPositionX": 11,
+    "gridPositionY": 2,
+    "entity": "Finish"
+  },
+  {
+    "gridPositionX": 1,
+    "gridPositionY": 2,
+    "entity": "Player"
+  },
+  {
+    "gridPositionX": 5,
+    "gridPositionY": 7,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 6,
+    "gridPositionY": 7,
+    "entity": "Terrain"
+  },
+  {
+    "gridPositionX": 7,
+    "gridPositionY": 7,
+    "entity": "Terrain"
+  }
+]

@@ -138,8 +138,8 @@ object Engine {
                     drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
-                        outputPositionX = playerEntity.gridPositionX * GameState.tileSize + GameState.playerPositionX,
-                        outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - playerEntity.gridPositionY * GameState.tileSize + GameState.playerPositionY,
+                        outputPositionX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX,
+                        outputPositionY = (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntity.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY,
                         outputWidth = 64,
                         outputHeight = 64,
                         currentFrame = GameState.playerCurrentAnimationFrame
@@ -151,8 +151,8 @@ object Engine {
                     val gapBetweenKeys = 0
                     val totalWidth = pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
 
-                    val playerWorldX = playerEntity.gridPositionX * GameState.tileSize + GameState.playerPositionX
-                    val playerWorldY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - playerEntity.gridPositionY * GameState.tileSize + GameState.playerPositionY
+                    val playerWorldX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX
+                    val playerWorldY = (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntity.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY
                     val startX = playerWorldX + (64 - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->

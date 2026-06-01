@@ -1,9 +1,8 @@
 package game
 
-import kotlinx.serialization.Serializable
-
 object GameState {
     var sceneType: SceneType = SceneType.Play
+    lateinit var currentMap: String
     var uiElements: List<UIElement> = listOf(
         UIElement(
             entity = Entity.Terrain,
@@ -77,10 +76,5 @@ object GameState {
 
     var backgroundOffsetY: Int = 0
 
-    val tileSize = 64
-
-    val playerEntity: MapEntity
-        get() = map.first { it.entity == Entity.Player
-        }
-
+    const val TILE_SIZE = 64
 }
