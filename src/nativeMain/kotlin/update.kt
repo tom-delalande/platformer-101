@@ -1,7 +1,4 @@
-import engine.color
-import engine.drawSprite
 import engine.engineData
-import engine.sprites
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -11,9 +8,6 @@ import logic.Input
 import logic.MapEntity
 import logic.SceneType
 import logic.model
-import raylib.BeginDrawing
-import raylib.DrawRectangle
-import raylib.EndDrawing
 
 val json = Json { prettyPrint = true }
 
@@ -35,7 +29,7 @@ fun update() {
                         map = model.map + MapEntity(
                             gridPositionX = gridX,
                             gridPositionY = gridY,
-                            entity = model.selectedUIElement!!.sprite
+                            entity = model.selectedUIElement!!.entity
                         )
                     )
                 }

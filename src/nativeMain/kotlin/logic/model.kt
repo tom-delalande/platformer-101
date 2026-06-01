@@ -9,7 +9,7 @@ data class Model(
     var sceneType: SceneType = SceneType.Play,
     var uiElements: List<UIElement> = listOf(
         UIElement(
-            sprite = Entity.Terrain,
+            entity = Entity.Terrain,
             inputX = 96,
             inputWidth = 48,
             inputHeight = 48,
@@ -19,7 +19,7 @@ data class Model(
             outputHeight = 64,
         ),
         UIElement(
-            sprite = Entity.Player,
+            entity = Entity.Player,
             inputWidth = 32,
             inputHeight = 32,
             outputPositionX = 128,
@@ -28,7 +28,7 @@ data class Model(
             outputHeight = 64,
         ),
         UIElement(
-            sprite = Entity.RockHead,
+            entity = Entity.RockHead,
             inputWidth = 42,
             inputHeight = 42,
             outputPositionX = 192,
@@ -37,7 +37,7 @@ data class Model(
             outputHeight = 64,
         ),
         UIElement(
-            sprite = Entity.Finish,
+            entity = Entity.Finish,
             inputWidth = 64,
             inputHeight = 64,
             outputPositionX = 256,
@@ -46,7 +46,7 @@ data class Model(
             outputHeight = 64,
         ),
         UIElement(
-            sprite = Entity.WoodBox,
+            entity = Entity.WoodBox,
             inputX = 0,
             inputY = 64,
             inputWidth = 48,
@@ -104,7 +104,7 @@ enum class SceneType {
 }
 
 data class UIElement(
-    val sprite: Entity,
+    val entity: Entity,
     val inputX: Int = 0,
     val inputY: Int = 0,
     val inputWidth: Int,
@@ -123,57 +123,7 @@ enum class Entity {
     RockHead,
     Finish,
     WoodBox,
-
-    PlayerRun,
-    PlayerJump,
-    PlayerFall,
 }
-
-fun Entity.getSpriteData() = when (this) {
-    Entity.Terrain -> SpriteData(
-        inputX = 98,
-        inputY = 0,
-        inputWidth = 44,
-        inputHeight = 44,
-    )
-
-    Entity.Player -> SpriteData(
-        inputX = 0,
-        inputY = 0,
-        inputWidth = 32,
-        inputHeight = 32,
-    )
-
-    Entity.RockHead -> SpriteData(
-        inputX = 0,
-        inputY = 0,
-        inputWidth = 42,
-        inputHeight = 42,
-    )
-
-    Entity.Finish -> SpriteData(
-        inputX = 0,
-        inputY = 0,
-        inputWidth = 64,
-        inputHeight = 64,
-    )
-
-    Entity.WoodBox -> SpriteData(
-        inputX = 0,
-        inputY = 64,
-        inputWidth = 48,
-        inputHeight = 48,
-    )
-
-    else -> SpriteData()
-}
-
-data class SpriteData(
-    val inputX: Int = 0,
-    val inputY: Int = 0,
-    val inputWidth: Int = 64,
-    val inputHeight: Int = 64,
-)
 
 enum class Input {
     Mouse1,

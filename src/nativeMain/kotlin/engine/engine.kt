@@ -9,7 +9,6 @@ import kotlinx.cinterop.useContents
 import logic.Entity
 import logic.Input
 import logic.SceneType
-import logic.getSpriteData
 import logic.model
 import logic.playerWorldX
 import logic.playerWorldY
@@ -29,7 +28,6 @@ import raylib.KEY_L
 import raylib.KEY_P
 import raylib.KEY_S
 import raylib.KEY_W
-import raylib.LoadTexture
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
 import raylib.Rectangle
@@ -39,20 +37,7 @@ private val RAYWHITE = color(245, 245, 245)
 private val LIGHTGRAY = color(200, 200, 200)
 
 fun engineInit() {
-    engineData = EngineData(
-        sprites = mapOf(
-            Entity.Background to LoadTexture("Assets/Pixel Adventure/Background/Yellow.png"),
-            Entity.Terrain to LoadTexture("Assets/Pixel Adventure/Terrain/Terrain (16x16).png"),
-            Entity.Player to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Idle (32x32).png"),
-            Entity.RockHead to LoadTexture("Assets/Pixel Adventure/Traps/Rock Head/Idle.png"),
-            Entity.Finish to LoadTexture("Assets/Pixel Adventure/Items/Checkpoints/End/End (Idle).png"),
-            Entity.WoodBox to LoadTexture("Assets/Pixel Adventure/Terrain/Terrain (16x16).png"),
-
-            Entity.PlayerRun to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Run (32x32).png"),
-            Entity.PlayerJump to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Jump (32x32).png"),
-            Entity.PlayerFall to LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Fall (32x32).png"),
-        )
-    )
+    engineData = EngineData()
 }
 
 fun engineUpdate() {
@@ -83,13 +68,10 @@ fun render() {
     (0..engineData.windowWidth.div(64)).forEach { xOffset ->
         (0..engineData.windowHeight.div(64)).forEach { yOffset ->
             drawSprite(
-                sprite = Entity.Background,
-                inputX = 0,
-                inputY = 0 + model.backgroundOffsetY,
-                inputWidth = 64,
-                inputHeight = 64,
+                sprite = sprites["Background"]!!,
+                inputYOffset = model.backgroundOffsetY,
                 outputPositionX = xOffset * 64f,
-                outputPositionY = yOffset * 64f,
+                outputPositionY = (yOffset * 64f),
             )
         }
     }
@@ -97,13 +79,8 @@ fun render() {
     when (model.sceneType) {
         SceneType.Editor -> {
             model.map.forEach {
-                val spriteData = it.entity.getSpriteData()
                 drawSprite(
-                    sprite = it.entity,
-                    inputX = spriteData.inputX,
-                    inputY = spriteData.inputY,
-                    inputWidth = spriteData.inputWidth,
-                    inputHeight = spriteData.inputHeight,
+                    sprite = it.entity.toDefaultSprite(),
                     outputPositionX = it.gridPositionX * 64f,
                     outputPositionY = (engineData.windowHeight / 64) * 64 - it.gridPositionY * 64f,
                     outputWidth = 64,
@@ -113,11 +90,7 @@ fun render() {
 
             if (model.selectedUIElement != null) {
                 drawSprite(
-                    sprite = model.selectedUIElement!!.sprite,
-                    inputX = model.selectedUIElement!!.inputX,
-                    inputY = model.selectedUIElement!!.inputY,
-                    inputWidth = model.selectedUIElement!!.inputWidth,
-                    inputHeight = model.selectedUIElement!!.inputHeight,
+                    sprite = model.selectedUIElement!!.entity.toDefaultSprite(),
                     outputPositionX = model.mousePositionX - 32f,
                     outputPositionY = model.mousePositionY - 32f,
                     outputWidth = 64,
@@ -128,11 +101,7 @@ fun render() {
 
             model.uiElements.forEach {
                 drawSprite(
-                    sprite = it.sprite,
-                    inputX = it.inputX,
-                    inputY = it.inputY,
-                    inputWidth = it.inputWidth,
-                    inputHeight = it.inputHeight,
+                    sprite = it.entity.toDefaultSprite(),
                     outputPositionX = it.outputPositionX.toFloat(),
                     outputPositionY = it.outputPositionY.toFloat(),
                     outputWidth = it.outputWidth,
@@ -143,13 +112,8 @@ fun render() {
 
         SceneType.Play -> {
             model.map.filter { it.entity != Entity.Player }.forEach {
-                val spriteData = it.entity.getSpriteData()
                 drawSprite(
-                    sprite = it.entity,
-                    inputX = spriteData.inputX,
-                    inputY = spriteData.inputY,
-                    inputWidth = spriteData.inputWidth,
-                    inputHeight = spriteData.inputHeight,
+                    sprite = it.entity.toDefaultSprite(),
                     outputPositionX = it.gridPositionX * 64f,
                     outputPositionY = (engineData.windowHeight / 64) * 64 - it.gridPositionY * 64f,
                     outputWidth = 64,
@@ -158,121 +122,84 @@ fun render() {
             }
             val playerEntity = model.map.find { it.entity == Entity.Player }
             if (playerEntity != null) {
-                var numberOfFrames = 11
-                var entity = Entity.Player
-                when {
-                    model.playerVelocityX != 0f -> {
-                        numberOfFrames = 12
-                        entity = Entity.PlayerRun
-                    }
-
-                    model.playerVelocityY == 0f && model.playerVelocityX == 0f -> {
-                        numberOfFrames = 11
-                        entity = Entity.Player
-                    }
-
-                    model.playerVelocityY >= 0 -> {
-                        numberOfFrames = 1
-                        entity = Entity.PlayerJump
-                    }
-
-                    model.playerVelocityY < 0 -> {
-                        numberOfFrames = 1
-                        entity = Entity.PlayerFall
-                    }
+                val sprite = when {
+                    model.playerVelocityY > 0 -> sprites["Player_Jump"]
+                    model.playerVelocityY < 0 -> sprites["Player_Fall"]
+                    model.playerVelocityX != 0f -> sprites["Player_Run"]
+                    model.playerVelocityY == 0f && model.playerVelocityX == 0f -> sprites["Player_Idle"]
+                    else -> sprites["Player_Idle"]
                 }
                 drawSprite(
-                    sprite = entity,
-                    inputX = 32 * (model.playerCurrentAnimationFrame % numberOfFrames),
-                    inputY = 0,
-                    inputWidth = 32 * model.playerDirection,
-                    inputHeight = 32,
+                    sprite = sprite!!,
+                    flipHorizontally = model.playerDirection == -1,
                     outputPositionX = playerEntity.gridPositionX * tileSize + model.playerPositionX,
                     outputPositionY = (engineData.windowHeight / tileSize) * tileSize - playerEntity.gridPositionY * tileSize + model.playerPositionY,
                     outputWidth = 64,
                     outputHeight = 64,
+                    currentFrame = model.playerCurrentAnimationFrame
                 )
             } else {
                 println("WARN: no player entity set in map")
             }
 
-            model.isPressed.forEach {
-                // TODO(AI): when multiple keys are pressed can you show them all in a line with 8 pixels between them, all 64px above the players head
-                when (it) {
+            // --- AI-generated: key display above player head ---
+            val pressedKeys = model.isPressed
+            val keyIconSize = 64
+            val gapBetweenKeys = 0
+            val totalWidth = pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
+            val startX = playerWorldX + (64 - totalWidth) / 2f
+
+            pressedKeys.forEachIndexed { index, key ->
+                val x = startX + index * (keyIconSize + gapBetweenKeys)
+                when (key) {
                     Input.KeyboardW -> drawSprite(
                         sprite = sprites["Keyboard_W"]!!,
-                        outputWidth = 64,
-                        outputHeight = 64,
-                        outputPositionX = playerWorldX,
+                        outputWidth = keyIconSize,
+                        outputHeight = keyIconSize,
+                        outputPositionX = x,
                         outputPositionY = playerWorldY - 64,
                     )
 
                     Input.KeyboardA -> drawSprite(
                         sprite = sprites["Keyboard_A"]!!,
-                        outputWidth = 64,
-                        outputHeight = 64,
-                        outputPositionX = playerWorldX,
+                        outputWidth = keyIconSize,
+                        outputHeight = keyIconSize,
+                        outputPositionX = x,
                         outputPositionY = playerWorldY - 64,
                     )
 
                     Input.KeyboardD -> drawSprite(
                         sprite = sprites["Keyboard_D"]!!,
-                        outputWidth = 64,
-                        outputHeight = 64,
-                        outputPositionX = playerWorldX,
+                        outputWidth = keyIconSize,
+                        outputHeight = keyIconSize,
+                        outputPositionX = x,
                         outputPositionY = playerWorldY - 64,
                     )
 
                     Input.KeyboardS -> drawSprite(
                         sprite = sprites["Keyboard_S"]!!,
-                        outputWidth = 64,
-                        outputHeight = 64,
-                        outputPositionX = playerWorldX,
+                        outputWidth = keyIconSize,
+                        outputHeight = keyIconSize,
+                        outputPositionX = x,
                         outputPositionY = playerWorldY - 64,
                     )
 
                     else -> {}
                 }
             }
+            // --- end AI-generated ---
         }
     }
     EndDrawing()
 }
 
-
-fun drawSprite(
-    sprite: Entity,
-    inputX: Int = 0,
-    inputY: Int = 0,
-    inputWidth: Int = 16,
-    inputHeight: Int = 16,
-    outputPositionX: Float = 0f,
-    outputPositionY: Float = 0f,
-    outputWidth: Int = inputWidth,
-    outputHeight: Int = inputHeight,
-    tint: CValue<Color> = color(255, 255, 255),
-) {
-    DrawTexturePro(
-        texture = engineData.sprites[sprite]!!,
-        source = cValue<Rectangle> {
-            x = inputX.toFloat()
-            y = inputY.toFloat()
-            width = inputWidth.toFloat()
-            height = inputHeight.toFloat()
-        },
-        dest = cValue<Rectangle> {
-            x = outputPositionX
-            y = outputPositionY
-            width = outputWidth.toFloat()
-            height = outputHeight.toFloat()
-        },
-        origin = cValue<Vector2> {
-            x = 0f
-            y = 0f
-        },
-        rotation = 0.0f,
-        tint = tint,
-    )
+fun Entity.toDefaultSprite() = when (this) {
+    Entity.Background -> sprites["Background"]!!
+    Entity.Terrain -> sprites["Terrain"]!!
+    Entity.Player -> sprites["Player_Idle"]!!
+    Entity.RockHead -> sprites["RockHead"]!!
+    Entity.Finish -> sprites["Finish"]!!
+    Entity.WoodBox -> sprites["WoodBox"]!!
 }
 
 fun drawSprite(
@@ -282,13 +209,16 @@ fun drawSprite(
     outputWidth: Int = sprite.width,
     outputHeight: Int = sprite.height,
     tint: CValue<Color> = color(255, 255, 255),
+    inputYOffset: Int = 0,
+    flipHorizontally: Boolean = false,
+    currentFrame: Int = 0,
 ) {
     DrawTexturePro(
         texture = sprite.texture,
         source = cValue<Rectangle> {
-            x = sprite.positionX.toFloat()
-            y = sprite.positionY.toFloat()
-            width = sprite.width.toFloat()
+            x = sprite.positionX.toFloat() + sprite.width * (currentFrame % sprite.numberOfFrames)
+            y = (sprite.positionY + inputYOffset).toFloat()
+            width = if (flipHorizontally) sprite.width.toFloat() * -1 else sprite.width.toFloat()
             height = sprite.height.toFloat()
         },
         dest = cValue<Rectangle> {

@@ -4,6 +4,7 @@ import engine.engineData
 import engine.engineInit
 import engine.engineUpdate
 import engine.render
+import engine.sprites
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
 import kotlinx.cinterop.*
@@ -30,8 +31,8 @@ fun main() = runBlocking {
         }
     }
 
-    engineData.sprites.forEach {
-        UnloadTexture(it.value)
+    sprites.forEach {
+        UnloadTexture(it.value.texture)
     }
     CloseWindow()
 }

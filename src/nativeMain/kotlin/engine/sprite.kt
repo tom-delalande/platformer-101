@@ -48,5 +48,59 @@ val sprites: Map<String, Sprite> by lazy {
             width = 128,
             height = 128,
         ),
+        "Background" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Background/Yellow.png"),
+            numberOfFrames = 1,
+            width = 64,
+            height = 64,
+        ),
+        "Terrain" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Terrain/Terrain (16x16).png"),
+            numberOfFrames = 1,
+            positionX = 98,
+            width = 44,
+            height = 44,
+        ),
+        "Player_Idle" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Idle (32x32).png"),
+            numberOfFrames = 11,
+            width = 32,
+            height = 32,
+        ),
+        "Player_Run" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Run (32x32).png"),
+            numberOfFrames = 12,
+            width = 32,
+            height = 32,
+        ),
+        "Player_Jump" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Jump (32x32).png"),
+            numberOfFrames = 1,
+            width = 32,
+            height = 32,
+        ),
+        "Player_Fall" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Main Characters/Mask Dude/Fall (32x32).png"),
+            numberOfFrames = 1,
+            width = 32,
+            height = 32,
+        ),
+        "RockHead" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Traps/Rock Head/Idle.png"),
+            numberOfFrames = 1,
+            width = 42,
+            height = 42,
+        ),
+        "Finish" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Items/Checkpoints/End/End (Idle).png"),
+            numberOfFrames = 1,
+        ),
+        "WoodBox" to Sprite(
+            texture = LoadTexture("Assets/Pixel Adventure/Terrain/Terrain (16x16).png"),
+            numberOfFrames = 1,
+            positionY = 64,
+            width = 48,
+            height = 48,
+        ),
     )
 }
