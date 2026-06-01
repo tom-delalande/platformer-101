@@ -26,7 +26,7 @@ fun main() = runBlocking {
     }
 
     Engine.init()
-    Game.init(mapUrl, sceneType)
+    Game.init(mapUrl, sceneType, Engine.WINDOW_HEIGHT)
 
     while (!WindowShouldClose()) {
         executeWithFixedFrameRate {

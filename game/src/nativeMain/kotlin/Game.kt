@@ -6,9 +6,10 @@ import kotlinx.serialization.json.Json
 
 
 object Game {
-    fun init(mapUrl: String, sceneType: SceneType) {
+    fun init(mapUrl: String, sceneType: SceneType, windowHeight: Int) {
         GameState.sceneType = sceneType
         GameState.currentMap = mapUrl
+        GameState.windowHeight = windowHeight
         Map.load()
     }
 
@@ -23,8 +24,8 @@ object Game {
                     if (hit != null) {
                         GameState.selectedUIElement = hit
                     } else if (GameState.selectedUIElement != null) {
-                        val gridX = GameState.mousePositionX / 64
-                        val gridY = GameState.mousePositionY / 64
+                        val gridX = GameState.mousePositionX / GameState.TILE_SIZE
+                        val gridY = (GameState.windowHeight - GameState.mousePositionY + GameState.TILE_SIZE) / GameState.TILE_SIZE
                         GameState.map += MapEntity(
                             gridPositionX = gridX,
                             gridPositionY = gridY,
@@ -34,7 +35,7 @@ object Game {
                 }
                 if (Input.Mouse2.isNewlyPressed()) {
                     val gridX = GameState.mousePositionX / 64
-                    val gridY = GameState.mousePositionY / 64
+                    val gridY = (GameState.windowHeight - GameState.mousePositionY + GameState.TILE_SIZE) / GameState.TILE_SIZE
                     GameState.map = GameState.map.filterNot { it.gridPositionX == gridX && it.gridPositionY == gridY }
                 }
 
@@ -46,6 +47,13 @@ object Game {
                 }
                 if (Input.KeyboardP.isNewlyPressed()) {
                     GameState.sceneType = SceneType.Play
+                }
+                val cameraMoveSpeed = 10
+                if (Input.KeyboardD.isPressed()) {
+                    GameState.cameraOffsetX += cameraMoveSpeed
+                }
+                if (Input.KeyboardA.isPressed()) {
+                    GameState.cameraOffsetX -= cameraMoveSpeed
                 }
             }
 

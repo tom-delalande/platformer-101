@@ -1,8 +1,10 @@
 package game
 
 object GameState {
+
     var sceneType: SceneType = SceneType.Play
     lateinit var currentMap: String
+    var windowHeight = 600
     var uiElements: List<UIElement> = listOf(
         UIElement(
             entity = Entity.Terrain,
@@ -75,6 +77,8 @@ object GameState {
     var playerCurrentAnimationFrame: Int = 0
 
     var backgroundOffsetY: Int = 0
+
+    var cameraOffsetX: Int = 0
 
     const val TILE_SIZE = 64
 }
