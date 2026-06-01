@@ -1,7 +1,8 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-package engine
-
+import engine.Sprite
+import engine.color
+import engine.sprites
 import game.Entity
 import game.GameState
 import game.Input
@@ -36,6 +37,7 @@ import raylib.SetTargetFPS
 import raylib.Vector2
 
 private val RAYWHITE = color(245, 245, 245)
+
 object Engine {
     const val WINDOW_WIDTH: Int = 800
     const val WINDOW_HEIGHT: Int = 600
@@ -75,6 +77,7 @@ object Engine {
             (0..WINDOW_HEIGHT.div(64)).forEach { yOffset ->
                 drawSprite(
                     sprite = sprites["Background"]!!,
+                    inputXOffset = GameState.cameraOffsetX,
                     inputYOffset = GameState.backgroundOffsetY,
                     outputPositionX = xOffset * 64f,
                     outputPositionY = (yOffset * 64f),
@@ -87,7 +90,7 @@ object Engine {
                 GameState.map.forEach {
                     drawSprite(
                         sprite = it.entity.toDefaultSprite(),
-                        outputPositionX = it.gridPositionX * 64f,
+                        outputPositionX = (it.gridPositionX * 64f) - GameState.cameraOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.gridPositionY * 64f,
                         outputWidth = 64,
                         outputHeight = 64,
@@ -97,7 +100,7 @@ object Engine {
                 if (GameState.selectedUIElement != null) {
                     drawSprite(
                         sprite = GameState.selectedUIElement!!.entity.toDefaultSprite(),
-                        outputPositionX = GameState.mousePositionX - 32f,
+                        outputPositionX = (GameState.mousePositionX - 32f),
                         outputPositionY = GameState.mousePositionY - 32f,
                         outputWidth = 64,
                         outputHeight = 64,
@@ -120,7 +123,7 @@ object Engine {
                 GameState.map.filter { it.entity != Entity.Player }.forEach {
                     drawSprite(
                         sprite = it.entity.toDefaultSprite(),
-                        outputPositionX = it.gridPositionX * 64f,
+                        outputPositionX = (it.gridPositionX * 64f) - GameState.cameraOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.gridPositionY * 64f,
                         outputWidth = 64,
                         outputHeight = 64,
@@ -138,7 +141,7 @@ object Engine {
                     drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
-                        outputPositionX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX,
+                        outputPositionX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX - GameState.cameraOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntity.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY,
                         outputWidth = 64,
                         outputHeight = 64,
@@ -149,14 +152,16 @@ object Engine {
                     val pressedKeys = GameState.isPressed
                     val keyIconSize = 64
                     val gapBetweenKeys = 0
-                    val totalWidth = pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
+                    val totalWidth =
+                        pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
 
                     val playerWorldX = playerEntity.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX
-                    val playerWorldY = (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntity.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY
+                    val playerWorldY =
+                        (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntity.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY
                     val startX = playerWorldX + (64 - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->
-                        val x = startX + index * (keyIconSize + gapBetweenKeys)
+                        val x = startX + index * (keyIconSize + gapBetweenKeys) - GameState.cameraOffsetX
                         when (key) {
                             Input.KeyboardW -> drawSprite(
                                 sprite = sprites["Keyboard_W"]!!,
@@ -229,6 +234,7 @@ fun drawSprite(
     outputWidth: Int = sprite.width,
     outputHeight: Int = sprite.height,
     tint: CValue<Color> = color(255, 255, 255),
+    inputXOffset: Int = 0,
     inputYOffset: Int = 0,
     flipHorizontally: Boolean = false,
     currentFrame: Int = 0,
@@ -236,7 +242,7 @@ fun drawSprite(
     DrawTexturePro(
         texture = sprite.texture,
         source = cValue<Rectangle> {
-            x = sprite.positionX.toFloat() + sprite.width * (currentFrame % sprite.numberOfFrames)
+            x = (sprite.positionX.toFloat() + inputXOffset) + sprite.width * (currentFrame % sprite.numberOfFrames)
             y = (sprite.positionY + inputYOffset).toFloat()
             width = if (flipHorizontally) sprite.width.toFloat() * -1 else sprite.width.toFloat()
             height = sprite.height.toFloat()

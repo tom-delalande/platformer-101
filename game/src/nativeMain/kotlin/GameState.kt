@@ -4,7 +4,8 @@ object GameState {
 
     var sceneType: SceneType = SceneType.Play
     lateinit var currentMap: String
-    var windowHeight = 600
+    var windowHeight: Int = 600
+    var windowWidth: Int = 800
     var uiElements: List<UIElement> = listOf(
         UIElement(
             entity = Entity.Terrain,

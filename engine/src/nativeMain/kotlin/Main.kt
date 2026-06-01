@@ -1,7 +1,6 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-import engine.Engine
-import engine.Engine.executeWithFixedFrameRate
+import Engine.executeWithFixedFrameRate
 import engine.sprites
 import game.Game
 import game.SceneType
@@ -26,7 +25,7 @@ fun main() = runBlocking {
     }
 
     Engine.init()
-    Game.init(mapUrl, sceneType, Engine.WINDOW_HEIGHT)
+    Game.init(mapUrl, sceneType, Engine.WINDOW_HEIGHT, Engine.WINDOW_WIDTH)
 
     while (!WindowShouldClose()) {
         executeWithFixedFrameRate {
