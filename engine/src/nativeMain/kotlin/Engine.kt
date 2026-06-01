@@ -82,26 +82,15 @@ object Engine {
         when (GameState.sceneType) {
             SceneType.Editor -> {
                 GameState.renderables.forEach {
-                    when (it) {
-                        is Animation -> Render.drawSprite(
-                            sprite = it.currentSprite,
-                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
-                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
-                            outputWidth = 64,
-                            outputHeight = 64,
-                            currentFrame = it.currentFrame,
-                        )
-
-                        is Static -> Render.drawSprite(
-                            sprite = it.currentSprite,
-                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
-                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
-                            outputWidth = 64,
-                            outputHeight = 64,
-                            // This is the only difference to above, could probably be simplified with better classes
-                            currentFrame = 0,
-                        )
-                    }
+                    Render.drawSprite(
+                        sprite = it.currentSprite,
+                        outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
+                        outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
+                        outputWidth = 64,
+                        outputHeight = 64,
+                        // This is the only difference to above, could probably be simplified with better classes
+                        currentFrame = 0,
+                    )
                 }
 
                 if (GameState.selectedUIElement != null) {

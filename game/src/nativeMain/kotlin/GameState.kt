@@ -95,7 +95,10 @@ object GameState {
         playerIsJumping = false
         playerDirection = 1
         cameraOffsetX = 0
+        initialiseRenderables()
+    }
 
+    fun initialiseRenderables() {
         renderables = map.mapNotNull { mapEntity ->
             when (mapEntity.entity) {
                 EntityType.Strawberry -> {
@@ -120,12 +123,22 @@ object GameState {
                             it.currentFrame = 0
                         }
                     )
+
                     SceneType.Play -> null
                 }
+
                 EntityType.RockHead -> Static(mapEntity, Sprite.sprites["RockHead"]!!)
                 EntityType.Finish -> Static(mapEntity, Sprite.sprites["Finish"]!!)
                 EntityType.WoodBox -> Static(mapEntity, Sprite.sprites["WoodBox"]!!)
             }
         }.toMutableList()
+    }
+
+    fun autoLoadNextMap() {
+        val currentMapIndex = Map.maps.indexOfFirst { it == currentMap }
+        val nextMap = Map.maps.getOrNull(currentMapIndex + 1)
+        if (nextMap != null) {
+            loadMap(nextMap)
+        }
     }
 }

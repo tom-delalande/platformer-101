@@ -32,11 +32,15 @@ object Game {
                         }
                         val gridY =
                             (GameState.windowHeight - GameState.mousePositionY + GameState.TILE_SIZE) / GameState.TILE_SIZE
-                        GameState.map += MapEntity(
-                            gridPositionX = gridX,
-                            gridPositionY = gridY,
-                            entity = GameState.selectedUIElement!!.entityType
+                        GameState.map.add(
+                            MapEntity(
+                                gridPositionX = gridX,
+                                gridPositionY = gridY,
+                                entity = GameState.selectedUIElement!!.entityType
+                            )
                         )
+                        Map.save()
+                        GameState.initialiseRenderables()
                     }
                 }
                 if (Input.Mouse2.isNewlyPressed()) {
@@ -49,7 +53,9 @@ object Game {
                     }
                     val gridY =
                         (GameState.windowHeight - GameState.mousePositionY + GameState.TILE_SIZE) / GameState.TILE_SIZE
-                    GameState.map = GameState.map.filterNot { it.gridPositionX == gridX && it.gridPositionY == gridY }.toMutableList()
+                    GameState.map.removeAll { it.gridPositionX == gridX && it.gridPositionY == gridY }
+                    Map.save()
+                    GameState.initialiseRenderables()
                 }
 
                 if (Input.KeyboardS.isNewlyPressed()) {
@@ -86,11 +92,7 @@ object Game {
                     Physics.executeIfPlayerIsCollidingWithTile(mapEntity) { _, _, _ ->
                         when (mapEntity.entity) {
                             EntityType.Finish -> {
-                                val currentMapIndex = Map.maps.indexOfFirst { it == GameState.currentMap }
-                                val nextMap = Map.maps.getOrNull(currentMapIndex + 1)
-                                if (nextMap != null) {
-                                    GameState.loadMap(nextMap)
-                                }
+                                GameState.autoLoadNextMap()
                             }
 
                             EntityType.Strawberry -> {
@@ -112,7 +114,7 @@ object Game {
                     }
                 }
 
-                val maxJumpVelocity = 30f
+                val maxJumpVelocity = 31f
                 val jumpSpeed = 10f
                 val gravity = 6f
                 if (Input.KeyboardW.isPressed() && GameState.playerIsJumping) {
@@ -152,6 +154,10 @@ object Game {
                     GameState.cameraOffsetX = (GameState.playerPositionX - (GameState.windowWidth / 2)).toInt()
                 }
 
+                // Check finish level
+                if (GameState.map.count { it.entity == EntityType.Strawberry } == 0) {
+//                    GameState.autoLoadNextMap()
+                }
             }
         }
         // Animate entities
