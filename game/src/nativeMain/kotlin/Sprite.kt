@@ -52,7 +52,7 @@ object Sprite {
                 height = 128,
             ),
             "Switch_B" to Sprite(
-                texture = "Assets/Inputs/SGamepad/Default/T_S_A.png",
+                texture = "Assets/Inputs/SGamepad/Default/T_S_B.png",
                 numberOfFrames = 1,
                 width = 128,
                 height = 128,

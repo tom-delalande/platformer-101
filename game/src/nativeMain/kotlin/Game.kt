@@ -81,10 +81,11 @@ object Game {
                 val maxVelocity = 10f
                 val friction = 1f
 
-                if (Input.KeyboardD.isPressed()) {
+                // AI-generated: added controller input support
+                if (Input.KeyboardD.isPressed() || Input.ControllerRight.isPressed()) {
                     GameState.playerVelocityX = min(GameState.playerVelocityX + speed, maxVelocity)
                 }
-                if (Input.KeyboardA.isPressed()) {
+                if (Input.KeyboardA.isPressed() || Input.ControllerLeft.isPressed()) {
                     GameState.playerVelocityX = max(GameState.playerVelocityX - speed, -maxVelocity)
                 }
 
@@ -117,16 +118,17 @@ object Game {
                 val maxJumpVelocity = 31f
                 val jumpSpeed = 10f
                 val gravity = 6f
-                if (Input.KeyboardW.isPressed() && GameState.playerIsJumping) {
+                // AI-generated: added controller input support
+                if ((Input.KeyboardW.isPressed() || Input.ControllerUp.isPressed()) && GameState.playerIsJumping) {
                     GameState.playerVelocityY = min(GameState.playerVelocityY + jumpSpeed, maxJumpVelocity)
                 }
 
-                if (Input.KeyboardW.isNewlyPressed() && GameState.playerIsGrounded) {
+                if ((Input.KeyboardW.isNewlyPressed() || Input.ControllerUp.isNewlyPressed()) && GameState.playerIsGrounded) {
                     GameState.playerIsJumping = true
                     GameState.playerVelocityY = min(GameState.playerVelocityY + jumpSpeed, maxJumpVelocity)
                 }
 
-                if (!Input.KeyboardW.isPressed() || GameState.playerVelocityY >= maxJumpVelocity) GameState.playerIsJumping =
+                if ((!Input.KeyboardW.isPressed() && !Input.ControllerUp.isPressed()) || GameState.playerVelocityY >= maxJumpVelocity) GameState.playerIsJumping =
                     false
 
 

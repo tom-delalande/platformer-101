@@ -29,6 +29,17 @@ import raylib.KEY_S
 import raylib.KEY_W
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
+// AI-generated: gamepad imports
+import raylib.IsGamepadAvailable
+import raylib.IsGamepadButtonDown
+import raylib.GetGamepadAxisMovement
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_UP
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_DOWN
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
+import raylib.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
+import raylib.GAMEPAD_AXIS_LEFT_X
+import raylib.GAMEPAD_AXIS_LEFT_Y
 import raylib.SetTargetFPS
 
 object Engine {
@@ -55,6 +66,12 @@ object Engine {
             if (IsKeyDown(KEY_W.toInt())) add(Input.KeyboardW)
             if (IsKeyDown(KEY_A.toInt())) add(Input.KeyboardA)
             if (IsKeyDown(KEY_D.toInt())) add(Input.KeyboardD)
+            // AI-generated: gamepad input polling
+            if (IsGamepadAvailable(0)) {
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT.toInt()) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X.toInt()) < -0.5f) add(Input.ControllerLeft)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT.toInt()) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X.toInt()) > 0.5f) add(Input.ControllerRight)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP.toInt()) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y.toInt()) < -0.5f || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN.toInt())) add(Input.ControllerUp)
+            }
         }
 
         val mousePosition = GetMousePosition()
@@ -203,6 +220,32 @@ object Engine {
                                 outputPositionX = x,
                                 outputPositionY = playerWorldY - 64,
                             )
+
+                            // AI-generated: controller Switch sprite rendering
+                            Input.ControllerLeft -> Render.drawSprite(
+                                sprite = Sprite.sprites["Switch_Left"]!!,
+                                outputWidth = keyIconSize,
+                                outputHeight = keyIconSize,
+                                outputPositionX = x,
+                                outputPositionY = playerWorldY - 64,
+                            )
+
+                            Input.ControllerRight -> Render.drawSprite(
+                                sprite = Sprite.sprites["Switch_Right"]!!,
+                                outputWidth = keyIconSize,
+                                outputHeight = keyIconSize,
+                                outputPositionX = x,
+                                outputPositionY = playerWorldY - 64,
+                            )
+
+                            Input.ControllerUp -> Render.drawSprite(
+                                sprite = Sprite.sprites["Switch_Up"]!!,
+                                outputWidth = keyIconSize,
+                                outputHeight = keyIconSize,
+                                outputPositionX = x,
+                                outputPositionY = playerWorldY - 64,
+                            )
+                            // --- end AI-generated ---
 
                             else -> {}
                         }
