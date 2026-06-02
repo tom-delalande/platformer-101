@@ -13,8 +13,10 @@ data class EngineSprite(
     val sprite: Sprite.Sprite,
 )
 
-val textures = Sprite.sprites.map {
-    it.value to LoadTexture(it.value.texture)
+val textures by lazy {
+    Sprite.sprites.map {
+        it.value to LoadTexture(it.value.texture)
+    }
 }
 
 fun Sprite.Sprite.toTexture() = textures.find { it.first == this }!!.second

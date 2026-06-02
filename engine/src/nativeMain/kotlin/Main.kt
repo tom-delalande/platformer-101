@@ -4,6 +4,7 @@ import Engine.executeWithFixedFrameRate
 import engine.textures
 import game.Game
 import game.SceneType
+import game.Sprite
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toKString
 import kotlinx.coroutines.runBlocking
@@ -14,6 +15,8 @@ import raylib.WindowShouldClose
 
 
 fun main() = runBlocking {
+    Engine.init()
+    Sprite.init()
     val sceneType = when (getenv("MODE")?.toKString()) {
         "EDITOR" -> SceneType.Editor
         else -> SceneType.Play
@@ -24,7 +27,6 @@ fun main() = runBlocking {
         else -> "Assets/Maps/1_1.json"
     }
 
-    Engine.init()
     Game.init(mapUrl, sceneType, Engine.WINDOW_HEIGHT, Engine.WINDOW_WIDTH)
 
     while (!WindowShouldClose()) {

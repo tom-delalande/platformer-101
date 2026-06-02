@@ -12,9 +12,10 @@ object Sprite {
         val height: Int = 64,
     )
 
+    var sprites: Map<String, Sprite> = emptyMap()
 
-    val sprites: Map<String, Sprite> by lazy {
-        mapOf(
+    fun init() {
+        sprites = mapOf(
             "End_Idle" to Sprite(
                 texture = "Assets/Pixel Adventure/Items/Checkpoints/End/End (Idle).png",
                 numberOfFrames = 1,

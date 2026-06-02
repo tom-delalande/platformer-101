@@ -48,15 +48,26 @@ kotlin {
     }
 
     linuxArm64 {
+        val libs = "${project.rootDir}/native/raylib/raylib-6.0_linux_arm64/lib"
         compilations["main"].cinterops {
             create("raylib") {
                 defFile("src/nativeInterop/cinterop/raylibLinux.def")
                 packageName("raylib")
+                compilerOpts("-I${project.rootDir}/native/raylib/raylib-6.0_linux_arm64/include")
+                extraOpts("-libraryPath", libs)
             }
         }
         binaries {
             executable {
                 entryPoint = "main"
+                linkerOpts(
+                    "-L$libs",
+                    "-Wl,--allow-shlib-undefined",
+                    "-lSDL2",
+                    "-lm",
+                    "-lpthread",
+                    "-ldl"
+                )
             }
         }
     }

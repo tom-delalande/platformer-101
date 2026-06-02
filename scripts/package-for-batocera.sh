@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-BINARY="${1:-$PROJECT_DIR/build/docker/engine.kexe}"
+BINARY="${1:-$PROJECT_DIR/engine/build/bin/linuxArm64/releaseExecutable/engine.kexe}"
 OUTPUT_DIR="${2:-$PROJECT_DIR/build/batocera}"
 
 if [[ ! -f "$BINARY" ]]; then
@@ -31,12 +31,21 @@ cat > "$LAUNCHER" << 'LAUNCHER_EOF'
 PORT_DIR="$(dirname "$0")/platformer"
 cd "$PORT_DIR"
 
+# Batocera SDL configuration
+#export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-KMSDRM}"
+#export SDL_RENDER_DRIVER="${SDL_RENDER_DRIVER:-opengles2}"
+#export SDL_JOYSTICK_DEVICE=/dev/input/js0
+
 export MODE="${MODE:-PLAY}"
 export MAP="${MAP:-1_1}"
+cp /userdata/roms/ports/platformer/lib/libcrypt.so.1 /usr/lib/
 
-"./platformer.kexe"
+LOG_FILE="/tmp/platformer.log"
+"./platformer.kexe" > "$LOG_FILE" 2>&1
+exit $?
 LAUNCHER_EOF
 chmod +x "$LAUNCHER"
+chmod +x "$OUTPUT_DIR/platformer/platformer.kexe"
 
 cat > "$OUTPUT_DIR/gamelist.xml" << 'GAMELIST_EOF'
 <?xml version="1.0" encoding="UTF-8"?>

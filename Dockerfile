@@ -1,33 +1,52 @@
-FROM fedora:40
+FROM ubuntu:22.04
 
-ARG BUILD_TYPE=release
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN dnf install -y \
-    curl \
-    unzip \
-    java-17-openjdk-devel \
-    mesa-libGL-devel \
-    mesa-libGLU-devel \
-    libXrandr-devel \
-    libXinerama-devel \
-    libXcursor-devel \
-    libXi-devel \
-    alsa-lib-devel \
-    pkgconfig \
-    && dnf clean all
+RUN apt-get update && apt-get install -y \
+    gcc g++ make git curl \
+    libgles2-mesa-dev libegl1-mesa-dev \
+    libdrm-dev libgbm-dev libsdl2-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN curl -L "https://github.com/raysan5/raylib/releases/download/6.0/raylib-6.0_linux_arm64.tar.gz" \
-    -o /tmp/raylib.tar.gz \
-    && tar -xzf /tmp/raylib.tar.gz -C /usr/local --strip-components=1 \
-    && rm /tmp/raylib.tar.gz
+RUN curl -L "https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-aarch64.tar.gz" \
+    -o /tmp/cmake.tar.gz && \
+    tar -xzf /tmp/cmake.tar.gz -C /usr/local --strip-components=1 && \
+    rm /tmp/cmake.tar.gz
 
-WORKDIR /workspace
-COPY . .
+RUN git clone --branch 6.0 --depth 1 https://github.com/raysan5/raylib.git /tmp/raylib
 
-RUN case "$BUILD_TYPE" in \
-        debug) TASK="linkDebugExecutableLinuxArm64" ;; \
-        release) TASK="linkReleaseExecutableLinuxArm64" ;; \
-    esac \
-    && ./gradlew ":engine:${TASK}" --no-daemon
+RUN cmake -S /tmp/raylib -B /tmp/raylib/build \
+        -DPLATFORM="SDL" \
+        -DGRAPHICS="GRAPHICS_API_OPENGL_ES2" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_GAMES=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_LIBDIR=lib
 
-CMD ["cp", "engine/build/bin/linuxArm64/releaseExecutable/engine.kexe", "/output/"]
+RUN cmake --build /tmp/raylib/build --parallel $(nproc)
+
+RUN cmake --install /tmp/raylib/build --prefix /tmp/raylib-out && \
+    rm -rf /tmp/raylib
+
+RUN echo "=== glibc version ===" && \
+    ldd --version 2>&1 | head -1 && \
+    echo "=== C23 symbols in raylib ===" && \
+    strings /tmp/raylib-out/lib/libraylib.a | grep isoc23 | head -5 || echo "None found (good)" && \
+    echo "=== raylib static lib size ===" && \
+    ls -lh /tmp/raylib-out/lib/libraylib.a
+
+RUN mkdir -p /artifacts/lib /artifacts/include && \
+    cp /tmp/raylib-out/lib/libraylib.a /artifacts/lib/ && \
+    cp /tmp/raylib-out/include/raylib.h /artifacts/include/ && \
+    cp /tmp/raylib-out/include/raymath.h /artifacts/include/ && \
+    cp /tmp/raylib-out/include/rlgl.h /artifacts/include/ && \
+    for lib in libGLESv2 libEGL libdrm libgbm libSDL2; do \
+        find /usr -name "${lib}*" \( -type f -o -type l \) \
+            -not -name "*.la" -not -name "*.a" 2>/dev/null | \
+        while read f; do cp -P "$f" /artifacts/lib/ 2>/dev/null; done; \
+    done && \
+    echo "=== Files in lib/ ===" && \
+    ls -la /artifacts/lib/
+
+CMD cp -r /artifacts/* /output/
