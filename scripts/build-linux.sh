@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# This script was AI-generated (claude-3.5-sonnet)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,8 +11,8 @@ if [[ "$BUILD_TYPE" != "debug" && "$BUILD_TYPE" != "release" ]]; then
     exit 1
 fi
 
-if [[ "$(uname -s)" == "Linux" ]]; then
-    echo ":: Native Linux build detected"
+if [[ "$(uname -m)" == "aarch64" && "$(uname -s)" == "Linux" ]]; then
+    echo ":: Native ARM64 Linux build detected"
 
     if ! pkg-config --exists raylib 2>/dev/null; then
         echo ":: raylib not found via pkg-config. Install it:"
@@ -24,12 +23,12 @@ if [[ "$(uname -s)" == "Linux" ]]; then
 
     cd "$PROJECT_DIR"
     if [[ "$BUILD_TYPE" == "debug" ]]; then
-        ./gradlew :engine:linkDebugExecutableLinuxX64
+        ./gradlew :engine:linkDebugExecutableLinuxArm64
     else
-        ./gradlew :engine:linkReleaseExecutableLinuxX64
+        ./gradlew :engine:linkReleaseExecutableLinuxArm64
     fi
 
-    BINARY="$PROJECT_DIR/engine/build/bin/linuxX64/${BUILD_TYPE}Executable/engine.kexe"
+    BINARY="$PROJECT_DIR/engine/build/bin/linuxArm64/${BUILD_TYPE}Executable/engine.kexe"
     if [[ -f "$BINARY" ]]; then
         echo ":: Build successful: $BINARY"
     else
@@ -37,11 +36,11 @@ if [[ "$(uname -s)" == "Linux" ]]; then
         exit 1
     fi
 else
-    echo ":: Cross-platform build using Docker"
+    echo ":: Cross-platform build using Docker (ARM64)"
 
     cd "$PROJECT_DIR"
     docker build \
-        --platform linux/amd64 \
+        --platform linux/arm64 \
         --build-arg "BUILD_TYPE=$BUILD_TYPE" \
         -t platformer-builder \
         -f Dockerfile \
@@ -49,10 +48,10 @@ else
 
     mkdir -p "$PROJECT_DIR/build/docker"
     docker run --rm \
-        --platform linux/amd64 \
+        --platform linux/arm64 \
         -v "$PROJECT_DIR/build/docker:/output" \
         platformer-builder \
-        bash -c "cp engine/build/bin/linuxX64/${BUILD_TYPE}Executable/engine.kexe /output/"
+        bash -c "cp engine/build/bin/linuxArm64/${BUILD_TYPE}Executable/engine.kexe /output/"
 
     BINARY="$PROJECT_DIR/build/docker/engine.kexe"
     if [[ -f "$BINARY" ]]; then

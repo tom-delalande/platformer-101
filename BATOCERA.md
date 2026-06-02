@@ -1,35 +1,36 @@
-<!-- This documentation was AI-generated (claude-3.5-sonnet) -->
-# Building and Deploying to Batocera
+# Building and Deploying to Batocera (ARM64)
 
-[Batocera](https://batocera.org) is a retro-gaming Linux distribution. This guide covers how to build the Linux x64 binary of this platformer game and deploy it as a Batocera **port**.
+[Batocera](https://batocera.org) is a retro-gaming Linux distribution. This guide covers how to build the Linux ARM64 binary and deploy it as a Batocera **port**.
+
+Target devices: Raspberry Pi 3B+, 4, 5, and other ARM64 SBCs running Batocera.
 
 ## Prerequisites
 
-- **Batocera v39+** (x86_64) running on your target machine
-- SSH access to your Batocera machine (enable it in System Settings → Network → SSH)
+- **Batocera v39+** (ARM64) on your target machine
+- SSH access (enable in System Settings → Network → SSH)
 
-### For native Linux builds
-- JDK 17+
+### For native ARM64 Linux builds (e.g. on the Pi itself)
+- JDK 17+: `sudo apt install openjdk-17-jdk`
 - raylib development libraries: `sudo apt install libraylib-dev libgl1-mesa-dev`
 
 ### For Docker builds (macOS / any platform)
-- Docker with `linux/amd64` platform support
+- Docker Desktop with `linux/arm64` platform support (Apple Silicon Macs run ARM64 containers natively)
 
 ## Quick start
 
-### 1. Build the Linux binary
+### 1. Build the Linux ARM64 binary
 
-**On Linux natively:**
+**On an ARM64 Linux system natively:**
 ```bash
 ./scripts/build-linux.sh release
 ```
 
-**On macOS / any platform (using Docker):**
+**On macOS (using Docker):**
 ```bash
 ./scripts/build-linux.sh release
 ```
 
-The script auto-detects the platform and uses Docker when not on Linux.
+The script auto-detects the platform and uses Docker when not on native ARM64 Linux.
 
 ### 2. Package for Batocera
 
@@ -70,7 +71,7 @@ After deployment, your Batocera machine should have:
 ├── platformer-launcher.sh   # Launcher script (.sh = port)
 ├── gamelist.xml             # Metadata for the port
 └── platformer/
-    ├── platformer.kexe       # The game binary
+    ├── platformer.kexe      # The game binary
     └── Assets/
         ├── Maps/
         └── Inputs/
@@ -85,20 +86,11 @@ The game supports these env vars (set them in the launcher script):
 | `MODE` | `PLAY` | Set to `EDITOR` to start in level editor mode |
 | `MAP` | `1_1` | Map file to load (e.g. `1_2`, `1_3`) |
 
-## Cross-compilation notes
-
-Kotlin/Native can cross-compile from macOS to Linux x64. The Docker-based build handles this automatically by running the Gradle build inside a Linux container.
-
-If you prefer to set up a local cross-compilation toolchain on macOS:
-1. Install a Linux sysroot (e.g. via [cross-link](https://github.com/JetBrains/kotlin-cross-link))
-2. Build raylib for Linux x64
-3. Point `-I` and `-L` flags in `engine/build.gradle.kts` to the sysroot paths
-
 ## Troubleshooting
 
 | Problem | Solution |
 |---|---|
-| `linkDebugExecutableLinuxX64` not found | Run on Linux or use the Docker build |
-| `raylib not found` | Install raylib dev package for your Linux distro |
+| `linkReleaseExecutableLinuxArm64` not found | Run on ARM64 Linux or use the Docker build |
+| `raylib not found` | Install raylib dev package for your ARM64 Linux distro |
 | Game doesn't appear in Ports | Ensure the `.sh` launcher is executable: `chmod +x /userdata/roms/ports/platformer-launcher.sh` |
 | Game crashes on launch | Run it via SSH: `/userdata/roms/ports/platformer/platformer.kexe` to see error output |

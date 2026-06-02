@@ -9,8 +9,7 @@ repositories {
 
 kotlin {
     macosArm64()
-    // linuxX64 target added by AI (claude-3.5-sonnet) for Batocera deployment
-    linuxX64()
+    linuxArm64()
 
     macosArm64 {
         compilations.getByName("main") {
@@ -25,8 +24,6 @@ kotlin {
         binaries {
             executable {
                 entryPoint = "main"
-                // File-IO working dir: run tasks use the project root so that
-                // relative paths like "map.json" and "Assets/" resolve correctly.
                 runTaskProvider?.configure {
                     workingDir = rootProject.layout.projectDirectory.asFile
                 }
@@ -50,26 +47,16 @@ kotlin {
         }
     }
 
-    // linuxX64 configuration block was AI-generated (claude-3.5-sonnet)
-    linuxX64 {
-        compilations.getByName("main") {
-            cinterops {
-                val raylib by creating {
-                    definitionFile.set(project.file("src/nativeInterop/cinterop/raylib.def"))
-                    packageName("raylib")
-                    compilerOpts("-I/usr/include", "-I/usr/local/include")
-                }
+    linuxArm64 {
+        compilations["main"].cinterops {
+            create("raylib") {
+                defFile("src/nativeInterop/cinterop/raylibLinux.def")
+                packageName("raylib")
             }
         }
         binaries {
             executable {
                 entryPoint = "main"
-                // AI-generated (claude-3.5-sonnet) linker flags for raylib on Linux
-                linkerOpts("-L/usr/local/lib", "-lraylib")
-                // AI-generated (claude-3.5-sonnet) runTask config for working dir
-                runTaskProvider?.configure {
-                    workingDir = rootProject.layout.projectDirectory.asFile
-                }
             }
         }
     }
