@@ -34,6 +34,4 @@ object Utils {
         fclose(file)
         return bytes.decodeToString()
     }
-
-
 }

@@ -1,7 +1,9 @@
 package game
 
+import game.GameState.playSpaceOffsetX
 import game.GameState.playSpaceOffsetY
 import game.GameState.tileSize
+import kotlin.math.abs
 import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.min
@@ -18,29 +20,45 @@ object Game {
     fun setWindowProperties(windowHeight: Int, windowWidth: Int) {
         GameState.windowHeight = windowHeight
         GameState.windowWidth = windowWidth
-
         // Rounded to nearest power of 2
-        tileSize = 2.0.pow(log2( windowWidth / 32.0).roundToInt()).toInt()
+        tileSize = 2.0.pow(log2(GameState.windowWidth / 32.0).roundToInt()).toInt()
+        setPlaySpaceOffset()
+    }
+
+    fun setPlaySpaceOffset() {
+        if (GameState.map.isEmpty()) return
 
         val maxYTile = GameState.map.maxOf { it.gridPositionY }
         val minYTile = GameState.map.minOf { it.gridPositionY }
         val playSpaceYSizeInTiles = (maxYTile - minYTile)
         playSpaceOffsetY = -(GameState.windowHeight / 2 - (tileSize * playSpaceYSizeInTiles) / 1.5).toInt()
 
+        val maxXTile = GameState.map.maxOf { it.gridPositionX }
+        val minXTile = GameState.map.minOf { it.gridPositionX }
+        val playSpaceXSizeInTiles = (maxXTile - minXTile)
+        if (abs(tileSize * playSpaceXSizeInTiles) < GameState.windowWidth) {
+            playSpaceOffsetX = -(GameState.windowWidth / 2 - (tileSize * playSpaceXSizeInTiles) / 2)
+        } else {
+            playSpaceOffsetX = 0
+        }
     }
 
     fun update() {
         when (GameState.sceneType) {
             SceneType.Editor -> {
-                if (Input.Mouse1.isNewlyPressed()) {
+                if (Input.Mouse1.isPressed()) {
+                    println("mouse pressed")
                     val hit = GameState.uiElements.firstOrNull { ui ->
-                        GameState.mousePositionX in ui.outputPositionX..<(ui.outputPositionX + ui.outputWidth) &&
-                                GameState.mousePositionY in ui.outputPositionY..<(ui.outputPositionY + ui.outputHeight)
+                        val outputPositionX = ui.outputPositionXTile * tileSize
+                        val outputPositionY = ui.outputPositionYTile * tileSize
+                        GameState.mousePositionX in outputPositionX..<(outputPositionX + tileSize) &&
+                                GameState.mousePositionY in outputPositionY..<(outputPositionY + tileSize)
                     }
                     if (hit != null) {
                         GameState.selectedUIElement = hit
                     } else if (GameState.selectedUIElement != null) {
-                        val gridX = ((GameState.mousePositionX + GameState.cameraOffsetX) / GameState.tileSize).let {
+                        val totalOffsetX = GameState.cameraOffsetX + playSpaceOffsetX
+                        val gridX = ((GameState.mousePositionX + totalOffsetX) / tileSize).let {
                             if (it < 0) {
                                 it - 1
                             } else {
@@ -48,7 +66,7 @@ object Game {
                             }
                         }
                         val gridY =
-                            (GameState.windowHeight - GameState.mousePositionY + GameState.tileSize) / GameState.tileSize
+                            ((GameState.windowHeight - GameState.mousePositionY + tileSize + playSpaceOffsetY) / tileSize)
                         GameState.map.add(
                             MapEntity(
                                 gridPositionX = gridX,
@@ -60,8 +78,9 @@ object Game {
                         GameState.initialiseRenderables()
                     }
                 }
-                if (Input.Mouse2.isNewlyPressed()) {
-                    val gridX = ((GameState.mousePositionX + GameState.cameraOffsetX) / GameState.tileSize).let {
+                if (Input.Mouse2.isPressed()) {
+                    val totalOffsetX = GameState.cameraOffsetX + GameState.playSpaceOffsetX
+                    val gridX = ((GameState.mousePositionX + totalOffsetX) / GameState.tileSize).let {
                         if (it < 0) {
                             it - 1
                         } else {
@@ -69,7 +88,7 @@ object Game {
                         }
                     }
                     val gridY =
-                        (GameState.windowHeight - GameState.mousePositionY + GameState.tileSize) / GameState.tileSize
+                        (GameState.windowHeight - GameState.mousePositionY + GameState.tileSize + playSpaceOffsetY) / GameState.tileSize
                     GameState.map.removeAll { it.gridPositionX == gridX && it.gridPositionY == gridY }
                     Map.save()
                     GameState.initialiseRenderables()
@@ -83,8 +102,15 @@ object Game {
                 }
                 if (Input.KeyboardP.isNewlyPressed()) {
                     GameState.loadMap(sceneType = SceneType.Play)
+                    setPlaySpaceOffset()
                 }
-                val cameraMoveSpeed = 10
+                if (Input.KeyboardW.isNewlyPressed()) {
+                    GameState.autoLoadNextMap()
+                }
+                if (Input.KeyboardS.isNewlyPressed()) {
+                    GameState.autoLoadPrevMap()
+                }
+                val cameraMoveSpeed = 30
                 if (Input.KeyboardD.isPressed()) {
                     GameState.cameraOffsetX += cameraMoveSpeed
                 }
@@ -169,8 +195,11 @@ object Game {
                 }
 
                 // Scroll screen
-                if (GameState.playerPositionX > GameState.windowWidth / 2) {
-                    GameState.cameraOffsetX = (GameState.playerPositionX - (GameState.windowWidth / 2)).toInt()
+                if (GameState.map.isNotEmpty()) {
+                    val maxX = GameState.map.maxOf { it.gridPositionX } * GameState.tileSize
+                    if (GameState.playerPositionX > GameState.windowWidth / 2 && maxX >= GameState.windowWidth + GameState.cameraOffsetX - tileSize) {
+                        GameState.cameraOffsetX = (GameState.playerPositionX - (GameState.windowWidth / 2)).toInt()
+                    }
                 }
 
                 // Check finish level

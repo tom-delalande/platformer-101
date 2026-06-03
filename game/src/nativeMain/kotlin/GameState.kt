@@ -1,61 +1,52 @@
 package game
 
+import game.Game.setPlaySpaceOffset
+
 object GameState {
     var sceneType: SceneType = SceneType.Play
     lateinit var currentMap: String
     var windowHeight: Int = 600
     var windowWidth: Int = 800
     var tileSize: Int = 64
+    var playSpaceOffsetX: Int = 0
     var playSpaceOffsetY: Int = 0
 
     var uiElements: List<UIElement> = listOf(
         UIElement(
             entityType = EntityType.Terrain,
             sprite = Sprite.sprites["Terrain"]!!,
-            outputPositionX = 64,
-            outputPositionY = 0,
-            outputWidth = 64,
-            outputHeight = 64,
+            outputPositionXTile = 1,
+            outputPositionYTile = 2,
         ),
         UIElement(
             entityType = EntityType.Player,
             sprite = Sprite.sprites["Player_Idle"]!!,
-            outputPositionX = 128,
-            outputPositionY = 0,
-            outputWidth = 64,
-            outputHeight = 64,
+            outputPositionXTile = 2,
+            outputPositionYTile = 2,
         ),
         UIElement(
             entityType = EntityType.RockHead,
             sprite = Sprite.sprites["RockHead"]!!,
-            outputPositionX = 192,
-            outputPositionY = 0,
-            outputWidth = 64,
-            outputHeight = 64,
+            outputPositionXTile = 3,
+            outputPositionYTile = 2,
         ),
         UIElement(
             entityType = EntityType.Finish,
             sprite = Sprite.sprites["Finish"]!!,
-            outputPositionX = 256,
-            outputPositionY = 0,
-            outputWidth = 64,
-            outputHeight = 64,
+            outputPositionXTile = 4,
+            outputPositionYTile = 2,
         ),
         UIElement(
             entityType = EntityType.WoodBox,
             sprite = Sprite.sprites["WoodBox"]!!,
-            outputPositionX = 320,
-            outputPositionY = 0,
-            outputWidth = 64,
-            outputHeight = 64,
+            outputPositionXTile = 5,
+            outputPositionYTile = 2,
         ),
         UIElement(
             entityType = EntityType.Strawberry,
             sprite = Sprite.sprites["Strawberry"]!!,
-            outputPositionX = 384,
-            outputPositionY = 0,
-            outputWidth = 64,
-            outputHeight = 64,
+            outputPositionXTile = 6,
+            outputPositionYTile = 2,
         ),
     )
 
@@ -139,6 +130,14 @@ object GameState {
     fun autoLoadNextMap() {
         val currentMapIndex = Map.maps.indexOfFirst { it == currentMap }
         val nextMap = Map.maps.getOrNull(currentMapIndex + 1)
+        if (nextMap != null) {
+            loadMap(nextMap)
+        }
+    }
+
+    fun autoLoadPrevMap() {
+        val currentMapIndex = Map.maps.indexOfFirst { it == currentMap }
+        val nextMap = Map.maps.getOrNull(currentMapIndex - 1)
         if (nextMap != null) {
             loadMap(nextMap)
         }

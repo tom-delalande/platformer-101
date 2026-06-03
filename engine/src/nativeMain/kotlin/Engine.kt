@@ -16,8 +16,8 @@ import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
 import raylib.BeginDrawing
 import raylib.ClearBackground
+import raylib.DrawText
 import raylib.EndDrawing
-import raylib.FLAG_WINDOW_TOPMOST
 import raylib.FLAG_WINDOW_UNDECORATED
 import raylib.GAMEPAD_AXIS_LEFT_X
 import raylib.GAMEPAD_AXIS_LEFT_Y
@@ -35,6 +35,7 @@ import raylib.InitWindow
 import raylib.IsGamepadAvailable
 import raylib.IsGamepadButtonDown
 import raylib.IsKeyDown
+import raylib.IsMouseButtonDown
 import raylib.IsMouseButtonPressed
 import raylib.KEY_A
 import raylib.KEY_D
@@ -45,7 +46,6 @@ import raylib.KEY_S
 import raylib.KEY_W
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
-import raylib.MaximizeWindow
 import raylib.SetConfigFlags
 import raylib.SetTargetFPS
 import raylib.SetWindowPosition
@@ -58,7 +58,7 @@ object Engine {
     private val RAYWHITE = color(245, 245, 245)
 
     fun init() {
-        SetConfigFlags(FLAG_WINDOW_UNDECORATED)
+//        SetConfigFlags(FLAG_WINDOW_UNDECORATED)
         InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
         SetTargetFPS(TARGET_FPS)
         val display = GetCurrentMonitor()
@@ -72,8 +72,8 @@ object Engine {
         GameState.wasPressed = GameState.isPressed
 
         GameState.isPressed = buildList {
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT.toInt())) add(Input.Mouse1)
-            if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT.toInt())) add(Input.Mouse2)
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT.toInt())) add(Input.Mouse1)
+            if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT.toInt())) add(Input.Mouse2)
             if (IsKeyDown(KEY_S.toInt())) add(Input.KeyboardS)
             if (IsKeyDown(KEY_L.toInt())) add(Input.KeyboardL)
             if (IsKeyDown(KEY_P.toInt())) add(Input.KeyboardP)
@@ -127,12 +127,13 @@ object Engine {
             }
         }
 
+        val totalOffsetX = GameState.cameraOffsetX + GameState.playSpaceOffsetX
         when (GameState.sceneType) {
             SceneType.Editor -> {
                 GameState.renderables.forEach {
                     Render.drawSprite(
                         sprite = it.currentSprite,
-                        outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - GameState.cameraOffsetX,
+                        outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - totalOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
@@ -145,7 +146,7 @@ object Engine {
                     Render.drawSprite(
                         sprite = GameState.selectedUIElement!!.sprite,
                         outputPositionX = (GameState.mousePositionX - 32f),
-                        outputPositionY = GameState.mousePositionY - 32f + GameState.playSpaceOffsetY,
+                        outputPositionY = GameState.mousePositionY - 32f,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
                         tint = color(255, 255, 255, 150),
@@ -155,10 +156,10 @@ object Engine {
                 GameState.uiElements.forEach {
                     Render.drawSprite(
                         sprite = it.sprite,
-                        outputPositionX = it.outputPositionX.toFloat(),
-                        outputPositionY = it.outputPositionY.toFloat() + GameState.playSpaceOffsetY,
-                        outputWidth = it.outputWidth,
-                        outputHeight = it.outputHeight,
+                        outputPositionX = it.outputPositionXTile.toFloat() * GameState.tileSize,
+                        outputPositionY = it.outputPositionYTile.toFloat() * GameState.tileSize,
+                        outputWidth = GameState.tileSize,
+                        outputHeight = GameState.tileSize,
                     )
                 }
             }
@@ -168,7 +169,7 @@ object Engine {
                     when (it) {
                         is Animation -> Render.drawSprite(
                             sprite = it.currentSprite,
-                            outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - GameState.cameraOffsetX,
+                            outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - totalOffsetX,
                             outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
                             outputWidth = GameState.tileSize,
                             outputHeight = GameState.tileSize,
@@ -177,7 +178,7 @@ object Engine {
 
                         is Static -> Render.drawSprite(
                             sprite = it.currentSprite,
-                            outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - GameState.cameraOffsetX,
+                            outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - totalOffsetX,
                             outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
                             outputWidth = GameState.tileSize,
                             outputHeight = GameState.tileSize,
@@ -198,7 +199,7 @@ object Engine {
                     Render.drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
-                        outputPositionX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX - GameState.cameraOffsetX,
+                        outputPositionX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX - totalOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - playerEntityType.gridPositionY * GameState.tileSize + GameState.playerPositionY + GameState.playSpaceOffsetY,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
@@ -217,7 +218,7 @@ object Engine {
                     val startX = playerWorldX + (GameState.tileSize - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->
-                        val x = startX + index * (keyIconSize + gapBetweenKeys) - GameState.cameraOffsetX
+                        val x = startX + index * (keyIconSize + gapBetweenKeys) - totalOffsetX
                         val sprite = when (key) {
                             Input.KeyboardW -> Sprite.sprites["Keyboard_W"]!!
                             Input.KeyboardA -> Sprite.sprites["Keyboard_A"]!!

@@ -1,5 +1,7 @@
 package game
 
+import game.Game.setPlaySpaceOffset
+import game.GameState.initialiseRenderables
 import kotlinx.serialization.json.Json
 
 object Map {
@@ -7,14 +9,17 @@ object Map {
         "Assets/Maps/1_1.json",
         "Assets/Maps/1_2.json",
         "Assets/Maps/1_3.json",
+        "Assets/Maps/1_4.json",
     )
 
     fun load() {
         val content = Utils.readTextFile(GameState.currentMap)
         if (content != null) {
             GameState.map = Json.decodeFromString(content)
-            println("${GameState.currentMap} loaded")
+        } else {
+            GameState.map = mutableListOf()
         }
+        setPlaySpaceOffset()
     }
 
     fun save() {
