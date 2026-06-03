@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     gcc g++ make git curl \
     libgles2-mesa-dev libegl1-mesa-dev \
     libdrm-dev libgbm-dev libsdl2-dev \
+    libasound2-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -L "https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-aarch64.tar.gz" \
@@ -22,7 +23,8 @@ RUN cmake -S /tmp/raylib -B /tmp/raylib/build \
         -DBUILD_EXAMPLES=OFF \
         -DBUILD_GAMES=OFF \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_LIBDIR=lib
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_C_FLAGS="-mno-outline-atomics"
 
 RUN cmake --build /tmp/raylib/build --parallel $(nproc)
 
@@ -41,12 +43,17 @@ RUN mkdir -p /artifacts/lib /artifacts/include && \
     cp /tmp/raylib-out/include/raylib.h /artifacts/include/ && \
     cp /tmp/raylib-out/include/raymath.h /artifacts/include/ && \
     cp /tmp/raylib-out/include/rlgl.h /artifacts/include/ && \
-    for lib in libGLESv2 libEGL libdrm libgbm libSDL2 libcrypt; do \
+    for lib in libGLESv2 libEGL libdrm libgbm libSDL2 libcrypt libasound2 libatomic; do \
         find /usr -name "${lib}*" \( -type f -o -type l \) \
             -not -name "*.la" -not -name "*.a" 2>/dev/null | \
         while read f; do cp -P "$f" /artifacts/lib/ 2>/dev/null; done; \
     done && \
+    if [ -f /artifacts/lib/libatomic.so.1.2.0 ]; then \
+        rm -f /artifacts/lib/libatomic.so && \
+        cp /artifacts/lib/libatomic.so.1.2.0 /artifacts/lib/libatomic.so && \
+        ln -sf libatomic.so.1.2.0 /artifacts/lib/libatomic.so.1; \
+    fi && \
     echo "=== Files in lib/ ===" && \
     ls -la /artifacts/lib/
 
-CMD cp -r /artifacts/* /output/
+CMD rm -rf /output/* && cp -r /artifacts/* /output/

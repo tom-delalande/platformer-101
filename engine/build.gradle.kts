@@ -66,7 +66,8 @@ kotlin {
                     "-lSDL2",
                     "-lm",
                     "-lpthread",
-                    "-ldl"
+                    "-ldl",
+                    "-latomic"
                 )
             }
         }
