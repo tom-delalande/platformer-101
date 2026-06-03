@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
 import Engine.executeWithFixedFrameRate
+import engine.engineAudio
 import engine.textures
 import game.Game
 import game.SceneType
@@ -10,6 +11,7 @@ import kotlinx.cinterop.toKString
 import kotlinx.coroutines.runBlocking
 import platform.posix.getenv
 import raylib.CloseWindow
+import raylib.UnloadSound
 import raylib.UnloadTexture
 import raylib.WindowShouldClose
 
@@ -44,6 +46,9 @@ fun main() = runBlocking {
 
     textures.forEach {
         UnloadTexture(it.second)
+    }
+    engineAudio.forEach {
+        UnloadSound(it.second)
     }
     CloseWindow()
 }

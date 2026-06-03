@@ -1,5 +1,6 @@
 package game
 
+import game.GameState.playSound
 import game.GameState.playSpaceOffsetX
 import game.GameState.playSpaceOffsetY
 import game.GameState.tileSize
@@ -67,15 +68,17 @@ object Game {
                         }
                         val gridY =
                             ((GameState.windowHeight - GameState.mousePositionY + tileSize + playSpaceOffsetY) / tileSize)
-                        GameState.map.add(
-                            MapEntity(
-                                gridPositionX = gridX,
-                                gridPositionY = gridY,
-                                entity = GameState.selectedUIElement!!.entityType
+                        if (GameState.map.none { it.gridPositionX == gridX && it.gridPositionY == gridY }) {
+                            GameState.map.add(
+                                MapEntity(
+                                    gridPositionX = gridX,
+                                    gridPositionY = gridY,
+                                    entity = GameState.selectedUIElement!!.entityType
+                                )
                             )
-                        )
-                        Map.save()
-                        GameState.initialiseRenderables()
+                            Map.save()
+                            GameState.initialiseRenderables()
+                        }
                     }
                 }
                 if (Input.Mouse2.isPressed()) {
@@ -127,9 +130,11 @@ object Game {
                 // AI-generated: added controller input support
                 if (Input.KeyboardD.isPressed() || Input.ControllerRight.isPressed()) {
                     GameState.playerVelocityX = min(GameState.playerVelocityX + speed, maxVelocity)
+                    playSound("Walk")
                 }
                 if (Input.KeyboardA.isPressed() || Input.ControllerLeft.isPressed()) {
                     GameState.playerVelocityX = max(GameState.playerVelocityX - speed, -maxVelocity)
+                    playSound("Walk")
                 }
 
                 GameState.map.toList().map { mapEntity ->
@@ -151,6 +156,7 @@ object Game {
                                     GameState.map.remove(mapEntity)
                                     GameState.renderables.remove(renderable)
                                 }
+                                playSound("Pickup")
                             }
 
                             else -> {}
@@ -168,6 +174,7 @@ object Game {
 
                 if ((Input.KeyboardW.isNewlyPressed() || Input.ControllerUp.isNewlyPressed()) && GameState.playerIsGrounded) {
                     GameState.playerIsJumping = true
+                    playSound("Jump")
                     GameState.playerVelocityY = min(GameState.playerVelocityY + jumpSpeed, maxJumpVelocity)
                 }
 
@@ -205,6 +212,7 @@ object Game {
                 // Check finish level
                 if (GameState.map.count { it.entity == EntityType.Strawberry } == 0) {
                     GameState.autoLoadNextMap()
+                    playSound("Door")
                 }
             }
         }

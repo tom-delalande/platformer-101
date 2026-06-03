@@ -76,6 +76,8 @@ object GameState {
 
     var renderables: MutableList<Renderable> = mutableListOf()
 
+    var sounds: MutableList<Audio.Clip> = mutableListOf()
+
     fun loadMap(nextMap: String = currentMap, sceneType: SceneType = GameState.sceneType) {
         GameState.sceneType = sceneType
         currentMap = nextMap
@@ -141,5 +143,9 @@ object GameState {
         if (nextMap != null) {
             loadMap(nextMap)
         }
+    }
+
+    fun playSound(name: String) {
+        sounds.add(Audio.audio[name]!!)
     }
 }

@@ -2,6 +2,7 @@
 
 // AI-generated: gamepad imports
 import engine.color
+import engine.toEngine
 import game.Animation
 import game.EntityType
 import game.GameState
@@ -16,9 +17,7 @@ import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
 import raylib.BeginDrawing
 import raylib.ClearBackground
-import raylib.DrawText
 import raylib.EndDrawing
-import raylib.FLAG_WINDOW_UNDECORATED
 import raylib.GAMEPAD_AXIS_LEFT_X
 import raylib.GAMEPAD_AXIS_LEFT_Y
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
@@ -31,12 +30,13 @@ import raylib.GetGamepadAxisMovement
 import raylib.GetMonitorHeight
 import raylib.GetMonitorWidth
 import raylib.GetMousePosition
+import raylib.InitAudioDevice
 import raylib.InitWindow
 import raylib.IsGamepadAvailable
 import raylib.IsGamepadButtonDown
 import raylib.IsKeyDown
 import raylib.IsMouseButtonDown
-import raylib.IsMouseButtonPressed
+import raylib.IsSoundPlaying
 import raylib.KEY_A
 import raylib.KEY_D
 import raylib.KEY_E
@@ -46,7 +46,7 @@ import raylib.KEY_S
 import raylib.KEY_W
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
-import raylib.SetConfigFlags
+import raylib.PlaySound
 import raylib.SetTargetFPS
 import raylib.SetWindowPosition
 import raylib.SetWindowSize
@@ -60,6 +60,7 @@ object Engine {
     fun init() {
 //        SetConfigFlags(FLAG_WINDOW_UNDECORATED)
         InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
+        InitAudioDevice()
         SetTargetFPS(TARGET_FPS)
         val display = GetCurrentMonitor()
         WINDOW_WIDTH = GetMonitorWidth(display)
@@ -113,6 +114,12 @@ object Engine {
     fun render() {
         BeginDrawing()
         ClearBackground(RAYWHITE)
+        GameState.sounds.forEach {
+            if (!IsSoundPlaying(it.toEngine())) {
+                PlaySound(it.toEngine());
+            }
+        }
+        GameState.sounds.clear()
 
         // Render Background
         (0..WINDOW_WIDTH.div(GameState.tileSize)).forEach { xOffset ->
