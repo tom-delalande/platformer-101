@@ -6,4 +6,4 @@ PROJECT_DIR=$(cd $SCRIPT_DIR/.. && pwd)
 
 echo ":: Building raylib library..."
 docker buildx build --platform linux/arm64 --no-cache -t raylib-builder .
-docker run --rm -v $PROJECT_DIR/native/raylib/raylib-6.0_linux_arm64:/output raylib-builder
+docker run --rm -v $PROJECT_DIR/native/raylib:/output raylib-builder
