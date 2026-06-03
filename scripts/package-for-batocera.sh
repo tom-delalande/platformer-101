@@ -38,7 +38,6 @@ cd "$PORT_DIR"
 
 export MODE="${MODE:-PLAY}"
 export MAP="${MAP:-1_1}"
-cp /userdata/roms/ports/platformer/lib/libcrypt.so.1 /usr/lib/
 
 LOG_FILE="/tmp/platformer.log"
 "./platformer.kexe" > "$LOG_FILE" 2>&1

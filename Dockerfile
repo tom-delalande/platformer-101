@@ -41,7 +41,7 @@ RUN mkdir -p /artifacts/lib /artifacts/include && \
     cp /tmp/raylib-out/include/raylib.h /artifacts/include/ && \
     cp /tmp/raylib-out/include/raymath.h /artifacts/include/ && \
     cp /tmp/raylib-out/include/rlgl.h /artifacts/include/ && \
-    for lib in libGLESv2 libEGL libdrm libgbm libSDL2; do \
+    for lib in libGLESv2 libEGL libdrm libgbm libSDL2 libcrypt; do \
         find /usr -name "${lib}*" \( -type f -o -type l \) \
             -not -name "*.la" -not -name "*.a" 2>/dev/null | \
         while read f; do cp -P "$f" /artifacts/lib/ 2>/dev/null; done; \
