@@ -5,6 +5,9 @@ object GameState {
     lateinit var currentMap: String
     var windowHeight: Int = 600
     var windowWidth: Int = 800
+    var tileSize: Int = 64
+    var playSpaceOffsetY: Int = 0
+
     var uiElements: List<UIElement> = listOf(
         UIElement(
             entityType = EntityType.Terrain,
@@ -80,7 +83,6 @@ object GameState {
 
     var cameraOffsetX: Int = 0
 
-    const val TILE_SIZE = 64
     var renderables: MutableList<Renderable> = mutableListOf()
 
     fun loadMap(nextMap: String = currentMap, sceneType: SceneType = GameState.sceneType) {

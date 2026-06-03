@@ -5,16 +5,16 @@ object Physics {
         val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
         if (playerEntityType == null) return
 
-        val pWorldX = playerEntityType.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX
-        val pWorldY = playerEntityType.gridPositionY * GameState.TILE_SIZE - GameState.playerPositionY
+        val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
+        val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
 
-        val playerRight = pWorldX + GameState.TILE_SIZE
-        val playerTop = pWorldY + GameState.TILE_SIZE
+        val playerRight = pWorldX + GameState.tileSize
+        val playerTop = pWorldY + GameState.tileSize
 
-        val blockLeft = mapEntity.gridPositionX * GameState.TILE_SIZE
-        val blockRight = blockLeft + GameState.TILE_SIZE
-        val blockBottom = mapEntity.gridPositionY * GameState.TILE_SIZE
-        val blockTop = blockBottom + GameState.TILE_SIZE
+        val blockLeft = mapEntity.gridPositionX * GameState.tileSize
+        val blockRight = blockLeft + GameState.tileSize
+        val blockBottom = mapEntity.gridPositionY * GameState.tileSize
+        val blockTop = blockBottom + GameState.tileSize
 
         if (playerRight > blockLeft && pWorldX < blockRight &&
             playerTop > blockBottom && pWorldY < blockTop

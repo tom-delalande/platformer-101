@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
+// AI-generated: gamepad imports
 import engine.color
 import game.Animation
 import game.EntityType
@@ -16,8 +17,23 @@ import kotlinx.coroutines.delay
 import raylib.BeginDrawing
 import raylib.ClearBackground
 import raylib.EndDrawing
+import raylib.FLAG_WINDOW_TOPMOST
+import raylib.FLAG_WINDOW_UNDECORATED
+import raylib.GAMEPAD_AXIS_LEFT_X
+import raylib.GAMEPAD_AXIS_LEFT_Y
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_UP
+import raylib.GAMEPAD_BUTTON_MIDDLE
+import raylib.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
+import raylib.GetCurrentMonitor
+import raylib.GetGamepadAxisMovement
+import raylib.GetMonitorHeight
+import raylib.GetMonitorWidth
 import raylib.GetMousePosition
 import raylib.InitWindow
+import raylib.IsGamepadAvailable
+import raylib.IsGamepadButtonDown
 import raylib.IsKeyDown
 import raylib.IsMouseButtonPressed
 import raylib.KEY_A
@@ -29,28 +45,27 @@ import raylib.KEY_S
 import raylib.KEY_W
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
-// AI-generated: gamepad imports
-import raylib.IsGamepadAvailable
-import raylib.IsGamepadButtonDown
-import raylib.GetGamepadAxisMovement
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_UP
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_DOWN
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
-import raylib.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
-import raylib.GAMEPAD_AXIS_LEFT_X
-import raylib.GAMEPAD_AXIS_LEFT_Y
+import raylib.MaximizeWindow
+import raylib.SetConfigFlags
 import raylib.SetTargetFPS
+import raylib.SetWindowPosition
+import raylib.SetWindowSize
 
 object Engine {
-    const val WINDOW_WIDTH: Int = 800
-    const val WINDOW_HEIGHT: Int = 600
+    var WINDOW_WIDTH: Int = 800
+    var WINDOW_HEIGHT: Int = 600
     const val TARGET_FPS = 30
     private val RAYWHITE = color(245, 245, 245)
 
     fun init() {
-        InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Hello Kotlin + Raylib")
+        SetConfigFlags(FLAG_WINDOW_UNDECORATED)
+        InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
         SetTargetFPS(TARGET_FPS)
+        val display = GetCurrentMonitor()
+        WINDOW_WIDTH = GetMonitorWidth(display)
+        WINDOW_HEIGHT = GetMonitorHeight(display)
+        SetWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
+        SetWindowPosition(0, 0)
     }
 
     fun update() {
@@ -68,9 +83,25 @@ object Engine {
             if (IsKeyDown(KEY_D.toInt())) add(Input.KeyboardD)
             // AI-generated: gamepad input polling
             if (IsGamepadAvailable(0)) {
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT.toInt()) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X.toInt()) < -0.5f) add(Input.ControllerLeft)
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT.toInt()) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X.toInt()) > 0.5f) add(Input.ControllerRight)
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP.toInt()) || GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y.toInt()) < -0.5f || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN.toInt())) add(Input.ControllerUp)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT.toInt()) || GetGamepadAxisMovement(
+                        0,
+                        GAMEPAD_AXIS_LEFT_X.toInt()
+                    ) < -0.5f
+                ) add(Input.ControllerLeft)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT.toInt()) || GetGamepadAxisMovement(
+                        0,
+                        GAMEPAD_AXIS_LEFT_X.toInt()
+                    ) > 0.5f
+                ) add(Input.ControllerRight)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP.toInt()) || GetGamepadAxisMovement(
+                        0,
+                        GAMEPAD_AXIS_LEFT_Y.toInt()
+                    ) < -0.5f || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN.toInt())
+                ) add(Input.ControllerUp)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_MIDDLE.toInt())) {
+                    throw CloseGameException()
+                }
+
             }
         }
 
@@ -84,14 +115,14 @@ object Engine {
         ClearBackground(RAYWHITE)
 
         // Render Background
-        (0..WINDOW_WIDTH.div(64)).forEach { xOffset ->
-            (0..WINDOW_HEIGHT.div(64)).forEach { yOffset ->
+        (0..WINDOW_WIDTH.div(GameState.tileSize)).forEach { xOffset ->
+            (0..WINDOW_HEIGHT.div(GameState.tileSize)).forEach { yOffset ->
                 Render.drawSprite(
                     sprite = Sprite.sprites["Background"]!!,
                     inputXOffset = GameState.cameraOffsetX,
                     inputYOffset = GameState.backgroundOffsetY,
-                    outputPositionX = xOffset * 64f,
-                    outputPositionY = (yOffset * 64f),
+                    outputPositionX = xOffset * GameState.tileSize.toFloat(),
+                    outputPositionY = (yOffset * GameState.tileSize.toFloat()),
                 )
             }
         }
@@ -101,10 +132,10 @@ object Engine {
                 GameState.renderables.forEach {
                     Render.drawSprite(
                         sprite = it.currentSprite,
-                        outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
-                        outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
-                        outputWidth = 64,
-                        outputHeight = 64,
+                        outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - GameState.cameraOffsetX,
+                        outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
+                        outputWidth = GameState.tileSize,
+                        outputHeight = GameState.tileSize,
                         // This is the only difference to above, could probably be simplified with better classes
                         currentFrame = 0,
                     )
@@ -114,9 +145,9 @@ object Engine {
                     Render.drawSprite(
                         sprite = GameState.selectedUIElement!!.sprite,
                         outputPositionX = (GameState.mousePositionX - 32f),
-                        outputPositionY = GameState.mousePositionY - 32f,
-                        outputWidth = 64,
-                        outputHeight = 64,
+                        outputPositionY = GameState.mousePositionY - 32f + GameState.playSpaceOffsetY,
+                        outputWidth = GameState.tileSize,
+                        outputHeight = GameState.tileSize,
                         tint = color(255, 255, 255, 150),
                     )
                 }
@@ -125,7 +156,7 @@ object Engine {
                     Render.drawSprite(
                         sprite = it.sprite,
                         outputPositionX = it.outputPositionX.toFloat(),
-                        outputPositionY = it.outputPositionY.toFloat(),
+                        outputPositionY = it.outputPositionY.toFloat() + GameState.playSpaceOffsetY,
                         outputWidth = it.outputWidth,
                         outputHeight = it.outputHeight,
                     )
@@ -137,19 +168,19 @@ object Engine {
                     when (it) {
                         is Animation -> Render.drawSprite(
                             sprite = it.currentSprite,
-                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
-                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
-                            outputWidth = 64,
-                            outputHeight = 64,
+                            outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - GameState.cameraOffsetX,
+                            outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
+                            outputWidth = GameState.tileSize,
+                            outputHeight = GameState.tileSize,
                             currentFrame = it.currentFrame,
                         )
 
                         is Static -> Render.drawSprite(
                             sprite = it.currentSprite,
-                            outputPositionX = (it.mapEntity.gridPositionX * 64f) - GameState.cameraOffsetX,
-                            outputPositionY = (WINDOW_HEIGHT / 64) * 64 - it.mapEntity.gridPositionY * 64f,
-                            outputWidth = 64,
-                            outputHeight = 64,
+                            outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - GameState.cameraOffsetX,
+                            outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
+                            outputWidth = GameState.tileSize,
+                            outputHeight = GameState.tileSize,
                             // This is the only difference to above, could probably be simplified with better classes
                             currentFrame = 0,
                         )
@@ -167,90 +198,46 @@ object Engine {
                     Render.drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
-                        outputPositionX = playerEntityType.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX - GameState.cameraOffsetX,
-                        outputPositionY = (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntityType.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY,
-                        outputWidth = 64,
-                        outputHeight = 64,
+                        outputPositionX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX - GameState.cameraOffsetX,
+                        outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - playerEntityType.gridPositionY * GameState.tileSize + GameState.playerPositionY + GameState.playSpaceOffsetY,
+                        outputWidth = GameState.tileSize,
+                        outputHeight = GameState.tileSize,
                         currentFrame = GameState.playerCurrentAnimationFrame
                     )
 
-                    // --- AI-generated: key display above player head ---
                     val pressedKeys = GameState.isPressed
-                    val keyIconSize = 64
+                    val keyIconSize = GameState.tileSize
                     val gapBetweenKeys = 0
                     val totalWidth =
                         pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
 
-                    val playerWorldX = playerEntityType.gridPositionX * GameState.TILE_SIZE + GameState.playerPositionX
+                    val playerWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
                     val playerWorldY =
-                        (WINDOW_HEIGHT / GameState.TILE_SIZE) * GameState.TILE_SIZE - playerEntityType.gridPositionY * GameState.TILE_SIZE + GameState.playerPositionY
-                    val startX = playerWorldX + (64 - totalWidth) / 2f
+                        (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - playerEntityType.gridPositionY * GameState.tileSize + GameState.playerPositionY + GameState.playSpaceOffsetY
+                    val startX = playerWorldX + (GameState.tileSize - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->
                         val x = startX + index * (keyIconSize + gapBetweenKeys) - GameState.cameraOffsetX
-                        when (key) {
-                            Input.KeyboardW -> Render.drawSprite(
-                                sprite = Sprite.sprites["Keyboard_W"]!!,
+                        val sprite = when (key) {
+                            Input.KeyboardW -> Sprite.sprites["Keyboard_W"]!!
+                            Input.KeyboardA -> Sprite.sprites["Keyboard_A"]!!
+                            Input.KeyboardD -> Sprite.sprites["Keyboard_D"]!!
+                            Input.KeyboardS -> Sprite.sprites["Keyboard_S"]!!
+                            Input.ControllerLeft -> Sprite.sprites["Switch_Left"]!!
+                            Input.ControllerRight -> Sprite.sprites["Switch_Right"]!!
+                            Input.ControllerUp -> Sprite.sprites["Switch_Up"]!!
+                            else -> null
+                        }
+                        if (sprite != null) {
+                            Render.drawSprite(
+                                sprite = sprite,
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
                                 outputPositionX = x,
-                                outputPositionY = playerWorldY - 64,
+                                outputPositionY = playerWorldY - GameState.tileSize.toFloat(),
                             )
-
-                            Input.KeyboardA -> Render.drawSprite(
-                                sprite = Sprite.sprites["Keyboard_A"]!!,
-                                outputWidth = keyIconSize,
-                                outputHeight = keyIconSize,
-                                outputPositionX = x,
-                                outputPositionY = playerWorldY - 64,
-                            )
-
-                            Input.KeyboardD -> Render.drawSprite(
-                                sprite = Sprite.sprites["Keyboard_D"]!!,
-                                outputWidth = keyIconSize,
-                                outputHeight = keyIconSize,
-                                outputPositionX = x,
-                                outputPositionY = playerWorldY - 64,
-                            )
-
-                            Input.KeyboardS -> Render.drawSprite(
-                                sprite = Sprite.sprites["Keyboard_S"]!!,
-                                outputWidth = keyIconSize,
-                                outputHeight = keyIconSize,
-                                outputPositionX = x,
-                                outputPositionY = playerWorldY - 64,
-                            )
-
-                            // AI-generated: controller Switch sprite rendering
-                            Input.ControllerLeft -> Render.drawSprite(
-                                sprite = Sprite.sprites["Switch_Left"]!!,
-                                outputWidth = keyIconSize,
-                                outputHeight = keyIconSize,
-                                outputPositionX = x,
-                                outputPositionY = playerWorldY - 64,
-                            )
-
-                            Input.ControllerRight -> Render.drawSprite(
-                                sprite = Sprite.sprites["Switch_Right"]!!,
-                                outputWidth = keyIconSize,
-                                outputHeight = keyIconSize,
-                                outputPositionX = x,
-                                outputPositionY = playerWorldY - 64,
-                            )
-
-                            Input.ControllerUp -> Render.drawSprite(
-                                sprite = Sprite.sprites["Switch_Up"]!!,
-                                outputWidth = keyIconSize,
-                                outputHeight = keyIconSize,
-                                outputPositionX = x,
-                                outputPositionY = playerWorldY - 64,
-                            )
-                            // --- end AI-generated ---
-
-                            else -> {}
                         }
                     }
-                    // --- end AI-generated ---
                 } else {
                     println("WARN: no player entity set in map")
                 }
@@ -269,4 +256,6 @@ object Engine {
             delay((1000 / TARGET_FPS).milliseconds - time)
         }
     }
+
+    class CloseGameException : Exception()
 }

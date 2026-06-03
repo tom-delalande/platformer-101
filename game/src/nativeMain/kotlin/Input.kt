@@ -17,6 +17,8 @@ enum class Input {
     ControllerLeft,
     ControllerRight,
     ControllerUp,
+
+    ControllerHome,
 }
 
 fun Input.isNewlyPressed() = GameState.isPressed.contains(this) && !GameState.wasPressed.contains(this)

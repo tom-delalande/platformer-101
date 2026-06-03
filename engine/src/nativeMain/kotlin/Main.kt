@@ -27,13 +27,18 @@ fun main() = runBlocking {
         else -> "Assets/Maps/1_1.json"
     }
 
-    Game.init(mapUrl, sceneType, Engine.WINDOW_HEIGHT, Engine.WINDOW_WIDTH)
+    Game.init(mapUrl, sceneType)
+    Game.setWindowProperties(Engine.WINDOW_HEIGHT, Engine.WINDOW_WIDTH)
 
     while (!WindowShouldClose()) {
-        executeWithFixedFrameRate {
-            Engine.update()
-            Game.update()
-            Engine.render()
+        try {
+            executeWithFixedFrameRate {
+                Engine.update()
+                Game.update()
+                Engine.render()
+            }
+        } catch (_: Engine.CloseGameException) {
+            break
         }
     }
 

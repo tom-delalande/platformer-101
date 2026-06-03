@@ -1,15 +1,32 @@
 package game
 
+import game.GameState.playSpaceOffsetY
+import game.GameState.tileSize
+import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 
 object Game {
-    fun init(mapUrl: String, sceneType: SceneType, windowHeight: Int, windowWidth: Int) {
+    fun init(mapUrl: String, sceneType: SceneType) {
         GameState.sceneType = sceneType
+        GameState.loadMap(mapUrl)
+    }
+
+    fun setWindowProperties(windowHeight: Int, windowWidth: Int) {
         GameState.windowHeight = windowHeight
         GameState.windowWidth = windowWidth
-        GameState.loadMap(mapUrl)
+
+        // Rounded to nearest power of 2
+        tileSize = 2.0.pow(log2( windowWidth / 32.0).roundToInt()).toInt()
+
+        val maxYTile = GameState.map.maxOf { it.gridPositionY }
+        val minYTile = GameState.map.minOf { it.gridPositionY }
+        val playSpaceYSizeInTiles = (maxYTile - minYTile)
+        playSpaceOffsetY = -(GameState.windowHeight / 2 - (tileSize * playSpaceYSizeInTiles) / 1.5).toInt()
+
     }
 
     fun update() {
@@ -23,7 +40,7 @@ object Game {
                     if (hit != null) {
                         GameState.selectedUIElement = hit
                     } else if (GameState.selectedUIElement != null) {
-                        val gridX = ((GameState.mousePositionX + GameState.cameraOffsetX) / GameState.TILE_SIZE).let {
+                        val gridX = ((GameState.mousePositionX + GameState.cameraOffsetX) / GameState.tileSize).let {
                             if (it < 0) {
                                 it - 1
                             } else {
@@ -31,7 +48,7 @@ object Game {
                             }
                         }
                         val gridY =
-                            (GameState.windowHeight - GameState.mousePositionY + GameState.TILE_SIZE) / GameState.TILE_SIZE
+                            (GameState.windowHeight - GameState.mousePositionY + GameState.tileSize) / GameState.tileSize
                         GameState.map.add(
                             MapEntity(
                                 gridPositionX = gridX,
@@ -44,7 +61,7 @@ object Game {
                     }
                 }
                 if (Input.Mouse2.isNewlyPressed()) {
-                    val gridX = ((GameState.mousePositionX + GameState.cameraOffsetX) / GameState.TILE_SIZE).let {
+                    val gridX = ((GameState.mousePositionX + GameState.cameraOffsetX) / GameState.tileSize).let {
                         if (it < 0) {
                             it - 1
                         } else {
@@ -52,7 +69,7 @@ object Game {
                         }
                     }
                     val gridY =
-                        (GameState.windowHeight - GameState.mousePositionY + GameState.TILE_SIZE) / GameState.TILE_SIZE
+                        (GameState.windowHeight - GameState.mousePositionY + GameState.tileSize) / GameState.tileSize
                     GameState.map.removeAll { it.gridPositionX == gridX && it.gridPositionY == gridY }
                     Map.save()
                     GameState.initialiseRenderables()
@@ -158,7 +175,7 @@ object Game {
 
                 // Check finish level
                 if (GameState.map.count { it.entity == EntityType.Strawberry } == 0) {
-//                    GameState.autoLoadNextMap()
+                    GameState.autoLoadNextMap()
                 }
             }
         }
@@ -180,20 +197,19 @@ object Game {
         if (playerEntityType != null) {
             val terrainBlocks =
                 GameState.map.filter { it.entity == EntityType.Terrain || it.entity == EntityType.WoodBox }
-            val tileSize = 64f
 
-            val pWorldX = playerEntityType.gridPositionX * tileSize + GameState.playerPositionX
-            val pWorldY = playerEntityType.gridPositionY * tileSize - GameState.playerPositionY
+            val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
+            val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
             // AI-gen: resolve X collisions first (no axis-picking ambiguity)
             for (block in terrainBlocks) {
 
-                val playerRight = pWorldX + tileSize
-                val playerTop = pWorldY + tileSize
+                val playerRight = pWorldX + GameState.tileSize
+                val playerTop = pWorldY + GameState.tileSize
 
-                val blockLeft = block.gridPositionX * tileSize
-                val blockRight = blockLeft + tileSize
-                val blockBottom = block.gridPositionY * tileSize
-                val blockTop = blockBottom + tileSize
+                val blockLeft = block.gridPositionX * GameState.tileSize
+                val blockRight = blockLeft + GameState.tileSize
+                val blockBottom = block.gridPositionY * GameState.tileSize
+                val blockTop = blockBottom + GameState.tileSize
 
                 if (playerRight > blockLeft && pWorldX < blockRight &&
                     playerTop > blockBottom && pWorldY < blockTop
@@ -201,9 +217,11 @@ object Game {
                     val overlapLeft = playerRight - blockLeft
                     val overlapRight = blockRight - pWorldX
                     if (overlapLeft < overlapRight) {
-                        GameState.playerPositionX = blockLeft - tileSize - playerEntityType.gridPositionX * tileSize
+                        GameState.playerPositionX =
+                            blockLeft - GameState.tileSize - playerEntityType.gridPositionX * GameState.tileSize.toFloat()
                     } else {
-                        GameState.playerPositionX = blockRight - playerEntityType.gridPositionX * tileSize
+                        GameState.playerPositionX =
+                            blockRight - playerEntityType.gridPositionX * GameState.tileSize.toFloat()
                     }
                     GameState.playerVelocityX = 0f
                 }
@@ -216,21 +234,21 @@ object Game {
             GameState.playerIsGrounded = false
             val groundedTolerance = 2f
             for (block in terrainBlocks) {
-                val pWorldX = playerEntityType.gridPositionX * tileSize + GameState.playerPositionX
-                val pWorldY = playerEntityType.gridPositionY * tileSize - GameState.playerPositionY
+                val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
+                val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
 
-                val playerRight = pWorldX + tileSize
+                val playerRight = pWorldX + GameState.tileSize
                 val playerBottom = pWorldY
 
-                val blockLeft = block.gridPositionX * tileSize
-                val blockRight = blockLeft + tileSize
-                val blockTop = block.gridPositionY * tileSize + tileSize
+                val blockLeft = block.gridPositionX * GameState.tileSize
+                val blockRight = blockLeft + GameState.tileSize
+                val blockTop = block.gridPositionY * GameState.tileSize + GameState.tileSize
 
                 if (playerRight > blockLeft && pWorldX < blockRight &&
                     playerBottom >= blockTop - groundedTolerance && playerBottom <= blockTop + groundedTolerance
                 ) {
                     GameState.playerIsGrounded = true
-                    GameState.playerPositionY = playerEntityType.gridPositionY * tileSize - blockTop
+                    GameState.playerPositionY = playerEntityType.gridPositionY * GameState.tileSize.toFloat() - blockTop
                     GameState.playerVelocityY = 0f
                     break
                 }
@@ -238,16 +256,16 @@ object Game {
 
             // AI-gen: resolve Y collisions (only vertical, no more axis-picking)
             for (block in terrainBlocks) {
-                val pWorldX = playerEntityType.gridPositionX * tileSize + GameState.playerPositionX
-                val pWorldY = playerEntityType.gridPositionY * tileSize - GameState.playerPositionY
+                val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
+                val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
 
-                val playerRight = pWorldX + tileSize
-                val playerTop = pWorldY + tileSize
+                val playerRight = pWorldX + GameState.tileSize
+                val playerTop = pWorldY + GameState.tileSize
 
-                val blockLeft = block.gridPositionX * tileSize
-                val blockRight = blockLeft + tileSize
-                val blockBottom = block.gridPositionY * tileSize
-                val blockTop = blockBottom + tileSize
+                val blockLeft = block.gridPositionX * GameState.tileSize
+                val blockRight = blockLeft + GameState.tileSize
+                val blockBottom = block.gridPositionY * GameState.tileSize
+                val blockTop = blockBottom + GameState.tileSize
 
                 if (playerRight > blockLeft && pWorldX < blockRight &&
                     playerTop > blockBottom && pWorldY < blockTop
@@ -255,12 +273,13 @@ object Game {
                     val overlapTop = blockTop - pWorldY
                     val overlapBottom = playerTop - blockBottom
                     if (overlapTop < overlapBottom) {
-                        GameState.playerPositionY = playerEntityType.gridPositionY * tileSize - blockTop
+                        GameState.playerPositionY =
+                            playerEntityType.gridPositionY * GameState.tileSize.toFloat() - blockTop
                         GameState.playerVelocityY = 0f
                         GameState.playerIsGrounded = true
                     } else {
                         GameState.playerPositionY =
-                            playerEntityType.gridPositionY * tileSize - (blockBottom - tileSize)
+                            playerEntityType.gridPositionY * GameState.tileSize - (blockBottom - GameState.tileSize.toFloat())
                         GameState.playerVelocityY = 0f
                     }
                 }

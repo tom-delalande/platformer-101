@@ -13,5 +13,8 @@
 - Animation when completing level
 - Clues
 - Stop scrolling when end is in sight
+- Save linux libs in the lib folder (not raylib-6.0)
 
 # Bugs
+- Visual scaling is completely broken
+- Speed should be done using tiles not pixels
