@@ -33,6 +33,7 @@ import raylib.GetGamepadAxisMovement
 import raylib.GetMonitorHeight
 import raylib.GetMonitorWidth
 import raylib.GetMousePosition
+import raylib.HideCursor
 import raylib.InitAudioDevice
 import raylib.InitWindow
 import raylib.IsGamepadAvailable
@@ -71,6 +72,7 @@ object Engine {
         WINDOW_HEIGHT = GetMonitorHeight(display)
         SetWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
         SetWindowPosition(0, 0)
+        HideCursor()
     }
 
     fun update() {
