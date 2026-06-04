@@ -211,11 +211,13 @@ object Game {
                 }
 
                 // Check fall
-                if (GameState.playerPositionYOffsetInTiles > 2) {
-                    GameState.playerPositionXOffsetInTiles = GameState.playerEntity?.gridPositionX?.toFloat()!!
-                    GameState.playerPositionYOffsetInTiles = GameState.playerEntity?.gridPositionY?.toFloat()!! - 1
-                    GameState.cameraOffsetX = 0
-                    playSound("Fall")
+                if (GameState.playerEntity != null) {
+                    if (GameState.playerEntity!!.gridPositionY - GameState.playerPositionYOffsetInTiles < -2) {
+                        GameState.playerPositionXOffsetInTiles = GameState.playerEntity?.gridPositionX?.toFloat()!!
+                        GameState.playerPositionYOffsetInTiles = GameState.playerEntity?.gridPositionY?.toFloat()!! - 1
+                        GameState.cameraOffsetX = 0
+                        playSound("Fall")
+                    }
                 }
 
                 // Check finish level
