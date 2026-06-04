@@ -103,8 +103,16 @@ object Engine {
 
                 if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP.toInt())) add(Input.SwitchControllerDPadUp)
                 if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN.toInt())) add(Input.SwitchControllerDPadDown)
-                if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y.toInt()) < -0.5f) add(Input.SwitchControllerLJoyStickUp)
-                if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y.toInt()) > 0.5f) add(Input.SwitchControllerLJoyStickDown)
+                if (GetGamepadAxisMovement(
+                        0,
+                        GAMEPAD_AXIS_LEFT_Y.toInt()
+                    ) < -0.5f
+                ) add(Input.SwitchControllerLJoyStickUp)
+                if (GetGamepadAxisMovement(
+                        0,
+                        GAMEPAD_AXIS_LEFT_Y.toInt()
+                    ) > 0.5f
+                ) add(Input.SwitchControllerLJoyStickDown)
                 if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT.toInt())) add(Input.SwitchControllerA)
                 if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN.toInt())) add(Input.SwitchControllerB)
 
@@ -205,17 +213,17 @@ object Engine {
                 val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
                 if (playerEntityType != null) {
                     val sprite = when {
-                        GameState.playerVelocityY > 0 -> Sprite.sprites["Player_Jump"]
-                        GameState.playerVelocityY < 0 -> Sprite.sprites["Player_Fall"]
-                        GameState.playerVelocityX != 0f -> Sprite.sprites["Player_Run"]
-                        GameState.playerVelocityY == 0f && GameState.playerVelocityX == 0f -> Sprite.sprites["Player_Idle"]
+                        GameState.playerVelocityYInTiles > 0 -> Sprite.sprites["Player_Jump"]
+                        GameState.playerVelocityYInTiles < 0 -> Sprite.sprites["Player_Fall"]
+                        GameState.playerVelocityXInTiles != 0f -> Sprite.sprites["Player_Run"]
+                        GameState.playerVelocityYInTiles == 0f && GameState.playerVelocityXInTiles == 0f -> Sprite.sprites["Player_Idle"]
                         else -> Sprite.sprites["Player_Idle"]
                     }
                     Render.drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
-                        outputPositionX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX - totalOffsetX,
-                        outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - playerEntityType.gridPositionY * GameState.tileSize + GameState.playerPositionY + GameState.playSpaceOffsetY,
+                        outputPositionX = playerEntityType.gridPositionX * GameState.tileSize + (GameState.playerPositionXOffsetInTiles * GameState.tileSize) - totalOffsetX,
+                        outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
                         currentFrame = GameState.playerCurrentAnimationFrame
@@ -227,9 +235,9 @@ object Engine {
                     val totalWidth =
                         pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
 
-                    val playerWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
-                    val playerWorldY =
-                        (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - playerEntityType.gridPositionY * GameState.tileSize + GameState.playerPositionY + GameState.playSpaceOffsetY
+
+                    val playerWorldX = GameState.playerWorldX
+                    val playerWorldY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY
                     val startX = playerWorldX + (GameState.tileSize - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->
@@ -269,6 +277,8 @@ object Engine {
 
             }
         }
+
+//        DrawText("Offset X: ${GameState.playSpaceOffsetX}", 64, 64, 24, color(0, 0, 0))
 
         EndDrawing()
     }

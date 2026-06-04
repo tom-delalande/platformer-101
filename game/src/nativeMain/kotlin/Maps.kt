@@ -1,7 +1,6 @@
 package game
 
 import game.Game.setPlaySpaceOffset
-import game.GameState.initialiseRenderables
 import kotlinx.serialization.json.Json
 
 object Map {
@@ -10,6 +9,11 @@ object Map {
         "Assets/Maps/1_2.json",
         "Assets/Maps/1_3.json",
         "Assets/Maps/1_4.json",
+        "Assets/Maps/1_5.json",
+        "Assets/Maps/1_6.json",
+        "Assets/Maps/1_7.json",
+        "Assets/Maps/1_8.json",
+        "Assets/Maps/1_9.json",
     )
 
     fun load() {

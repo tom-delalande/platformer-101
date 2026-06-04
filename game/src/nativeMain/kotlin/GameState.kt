@@ -1,7 +1,5 @@
 package game
 
-import game.Game.setPlaySpaceOffset
-
 object GameState {
     var sceneType: SceneType = SceneType.Play
     lateinit var currentMap: String
@@ -60,10 +58,10 @@ object GameState {
 
     var map: MutableList<MapEntity> = mutableListOf()
 
-    var playerPositionX: Float = 0.0f
-    var playerPositionY: Float = 0.0f
-    var playerVelocityX: Float = 0.0f
-    var playerVelocityY: Float = 0.0f
+    var playerPositionXOffsetInTiles: Float = 0.0f
+    var playerPositionYOffsetInTiles: Float = 0.0f
+    var playerVelocityXInTiles: Float = 0.0f
+    var playerVelocityYInTiles: Float = 0.0f
     var playerIsGrounded: Boolean = true
     var playerIsJumping: Boolean = false
     var playerDirection: Int = 1
@@ -82,16 +80,25 @@ object GameState {
         GameState.sceneType = sceneType
         currentMap = nextMap
         Map.load()
-        playerPositionX = 0f
-        playerPositionY = 0f
-        playerVelocityX = 0f
-        playerVelocityY = 0f
+        playerPositionXOffsetInTiles = 0f
+        playerPositionYOffsetInTiles = 0f
+        playerVelocityXInTiles = 0f
+        playerVelocityYInTiles = 0f
         playerIsGrounded = true
         playerIsJumping = false
         playerDirection = 1
         cameraOffsetX = 0
         initialiseRenderables()
     }
+
+    val playerEntityType: MapEntity?
+        get() = map.find { it.entity == EntityType.Player }
+
+    val playerWorldX: Float
+        get() = playerEntityType?.let { (it.gridPositionX + playerPositionXOffsetInTiles) * tileSize } ?: 0.0f
+    val playerWorldY: Float
+        get() = playerEntityType?.let { (playerEntityType!!.gridPositionY - playerPositionYOffsetInTiles) * tileSize }
+            ?: 0.0f
 
     fun initialiseRenderables() {
         renderables = map.mapNotNull { mapEntity ->

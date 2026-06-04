@@ -1,12 +1,16 @@
 package game
 
 object Physics {
-    fun executeIfPlayerIsCollidingWithTile(mapEntity: MapEntity, block: (pWorldX: Float, pWorldY: Float, playerEntity: MapEntity) -> Unit) {
+    fun executeIfPlayerIsCollidingWithTile(
+        mapEntity: MapEntity,
+        block: (pWorldX: Float, pWorldY: Float, playerEntity: MapEntity) -> Unit,
+    ) {
         val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
         if (playerEntityType == null) return
 
-        val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
-        val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
+        val pWorldX = GameState.playerWorldX
+        val pWorldY = GameState.playerWorldY
+
 
         val playerRight = pWorldX + GameState.tileSize
         val playerTop = pWorldY + GameState.tileSize

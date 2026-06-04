@@ -32,15 +32,17 @@ object Game {
         val maxYTile = GameState.map.maxOf { it.gridPositionY }
         val minYTile = GameState.map.minOf { it.gridPositionY }
         val playSpaceYSizeInTiles = (maxYTile - minYTile)
-        playSpaceOffsetY = -(GameState.windowHeight / 2 - (tileSize * playSpaceYSizeInTiles) / 1.5).toInt()
+        playSpaceOffsetY =
+            -(GameState.windowHeight / 2 - (tileSize * playSpaceYSizeInTiles) / 1.5).toInt() + minYTile * tileSize
 
         val maxXTile = GameState.map.maxOf { it.gridPositionX }
         val minXTile = GameState.map.minOf { it.gridPositionX }
         val playSpaceXSizeInTiles = (maxXTile - minXTile)
-        if (abs(tileSize * playSpaceXSizeInTiles) < GameState.windowWidth) {
-            playSpaceOffsetX = -(GameState.windowWidth / 2 - (tileSize * playSpaceXSizeInTiles) / 2)
+        println(playSpaceXSizeInTiles)
+        playSpaceOffsetX = if (abs(tileSize * playSpaceXSizeInTiles) < GameState.windowWidth) {
+            -(GameState.windowWidth / 2 - (tileSize * playSpaceXSizeInTiles) / 2) + minXTile * tileSize
         } else {
-            playSpaceOffsetX = 0
+            minXTile * tileSize
         }
     }
 
@@ -113,27 +115,27 @@ object Game {
                 if (Input.KeyboardS.isNewlyPressed()) {
                     GameState.autoLoadPrevMap()
                 }
-                val cameraMoveSpeed = 30
+                val cameraMoveSpeed = 2
                 if (Input.KeyboardD.isPressed()) {
-                    GameState.cameraOffsetX += cameraMoveSpeed
+                    GameState.cameraOffsetX += cameraMoveSpeed * tileSize
                 }
                 if (Input.KeyboardA.isPressed()) {
-                    GameState.cameraOffsetX -= cameraMoveSpeed
+                    GameState.cameraOffsetX -= cameraMoveSpeed * tileSize
                 }
             }
 
             SceneType.Play -> {
-                val speed = 2f
-                val maxVelocity = 10f
-                val friction = 1f
+                val speed = 2f / 64
+                val maxVelocity = 10f / 64
+                val friction = 1f / 64
 
                 // AI-generated: added controller input support
                 if (Input.KeyboardD.isPressed() || Input.SwitchControllerDPadRight.isPressed() || Input.SwitchControllerLJoyStickRight.isPressed()) {
-                    GameState.playerVelocityX = min(GameState.playerVelocityX + speed, maxVelocity)
+                    GameState.playerVelocityXInTiles = min(GameState.playerVelocityXInTiles + speed, maxVelocity)
                     playSound("Walk")
                 }
                 if (Input.KeyboardA.isPressed() || Input.SwitchControllerDPadLeft.isPressed() || Input.SwitchControllerLJoyStickLeft.isPressed()) {
-                    GameState.playerVelocityX = max(GameState.playerVelocityX - speed, -maxVelocity)
+                    GameState.playerVelocityXInTiles = max(GameState.playerVelocityXInTiles - speed, -maxVelocity)
                     playSound("Walk")
                 }
 
@@ -164,35 +166,37 @@ object Game {
                     }
                 }
 
-                val maxJumpVelocity = 31f
-                val jumpSpeed = 10f
-                val gravity = 6f
+                val maxJumpVelocity = 31f / 64
+                val jumpSpeed = 10f / 64
+                val gravity = 6f / 64
                 // AI-generated: added controller input support
                 if ((Input.KeyboardW.isPressed() || Input.SwitchControllerA.isPressed()) && GameState.playerIsJumping) {
-                    GameState.playerVelocityY = min(GameState.playerVelocityY + jumpSpeed, maxJumpVelocity)
+                    GameState.playerVelocityYInTiles =
+                        min(GameState.playerVelocityYInTiles + jumpSpeed, maxJumpVelocity)
                 }
 
                 if ((Input.KeyboardW.isNewlyPressed() || Input.SwitchControllerA.isNewlyPressed()) && GameState.playerIsGrounded) {
                     GameState.playerIsJumping = true
                     playSound("Jump")
-                    GameState.playerVelocityY = min(GameState.playerVelocityY + jumpSpeed, maxJumpVelocity)
+                    GameState.playerVelocityYInTiles =
+                        min(GameState.playerVelocityYInTiles + jumpSpeed, maxJumpVelocity)
                 }
 
-                if ((!Input.KeyboardW.isPressed() && !Input.SwitchControllerA.isPressed()) || GameState.playerVelocityY >= maxJumpVelocity) GameState.playerIsJumping =
+                if ((!Input.KeyboardW.isPressed() && !Input.SwitchControllerA.isPressed()) || GameState.playerVelocityYInTiles >= maxJumpVelocity) GameState.playerIsJumping =
                     false
 
 
                 processTerrainCollisions()
 
-                if (GameState.playerVelocityX > 0) {
+                if (GameState.playerVelocityXInTiles > 0) {
                     GameState.playerDirection = 1
-                    GameState.playerVelocityX = max(GameState.playerVelocityX - friction, 0f)
-                } else if (GameState.playerVelocityX < 0) {
+                    GameState.playerVelocityXInTiles = max(GameState.playerVelocityXInTiles - friction, 0f)
+                } else if (GameState.playerVelocityXInTiles < 0) {
                     GameState.playerDirection = -1
-                    GameState.playerVelocityX = min(GameState.playerVelocityX + friction, 0f)
+                    GameState.playerVelocityXInTiles = min(GameState.playerVelocityXInTiles + friction, 0f)
                 }
                 if (!GameState.playerIsGrounded) {
-                    GameState.playerVelocityY -= gravity
+                    GameState.playerVelocityYInTiles -= gravity
                 }
                 GameState.playerCurrentAnimationFrame += 1
                 GameState.backgroundOffsetY -= 1
@@ -204,8 +208,11 @@ object Game {
                 // Scroll screen
                 if (GameState.map.isNotEmpty()) {
                     val maxX = GameState.map.maxOf { it.gridPositionX } * GameState.tileSize
-                    if (GameState.playerPositionX > GameState.windowWidth / 2 && maxX >= GameState.windowWidth + GameState.cameraOffsetX - tileSize) {
-                        GameState.cameraOffsetX = (GameState.playerPositionX - (GameState.windowWidth / 2)).toInt()
+                    val minX = GameState.map.minOf { it.gridPositionX } * GameState.tileSize
+                    val diffX = maxX - minX
+                    if (GameState.playerPositionXOffsetInTiles > GameState.windowWidth / 2 && maxX >= (GameState.windowWidth + GameState.cameraOffsetX - tileSize) && diffX > GameState.windowWidth) {
+                        GameState.cameraOffsetX =
+                            (GameState.playerPositionXOffsetInTiles - (GameState.windowWidth / 2)).toInt()
                     }
                 }
 
@@ -227,7 +234,7 @@ object Game {
 
     private fun processTerrainCollisions() {
         // AI-gen: separate X movement from Y movement to prevent edge-landing bug
-        GameState.playerPositionX += GameState.playerVelocityX
+        GameState.playerPositionXOffsetInTiles += GameState.playerVelocityXInTiles
 
         // AI-gen: handle collisions using separate X then Y resolution
         val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
@@ -235,13 +242,13 @@ object Game {
             val terrainBlocks =
                 GameState.map.filter { it.entity == EntityType.Terrain || it.entity == EntityType.WoodBox }
 
-            val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
-            val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
+            val pWorldX = GameState.playerWorldX
+            val pWorldY = GameState.playerWorldY
             // AI-gen: resolve X collisions first (no axis-picking ambiguity)
             for (block in terrainBlocks) {
 
-                val playerRight = pWorldX + GameState.tileSize
-                val playerTop = pWorldY + GameState.tileSize
+                val playerRight = pWorldX + tileSize
+                val playerTop = pWorldY + tileSize
 
                 val blockLeft = block.gridPositionX * GameState.tileSize
                 val blockRight = blockLeft + GameState.tileSize
@@ -254,25 +261,25 @@ object Game {
                     val overlapLeft = playerRight - blockLeft
                     val overlapRight = blockRight - pWorldX
                     if (overlapLeft < overlapRight) {
-                        GameState.playerPositionX =
+                        GameState.playerPositionXOffsetInTiles =
                             blockLeft - GameState.tileSize - playerEntityType.gridPositionX * GameState.tileSize.toFloat()
                     } else {
-                        GameState.playerPositionX =
+                        GameState.playerPositionXOffsetInTiles =
                             blockRight - playerEntityType.gridPositionX * GameState.tileSize.toFloat()
                     }
-                    GameState.playerVelocityX = 0f
+                    GameState.playerVelocityXInTiles = 0f
                 }
             }
 
             // AI-gen: now move Y separately
-            GameState.playerPositionY -= GameState.playerVelocityY
+            GameState.playerPositionYOffsetInTiles -= GameState.playerVelocityYInTiles
 
             // AI-gen: grounded check (snap Y to block top if within tolerance)
             GameState.playerIsGrounded = false
             val groundedTolerance = 2f
             for (block in terrainBlocks) {
-                val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
-                val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
+                val pWorldX = GameState.playerWorldX
+                val pWorldY = GameState.playerWorldY
 
                 val playerRight = pWorldX + GameState.tileSize
                 val playerBottom = pWorldY
@@ -285,24 +292,25 @@ object Game {
                     playerBottom >= blockTop - groundedTolerance && playerBottom <= blockTop + groundedTolerance
                 ) {
                     GameState.playerIsGrounded = true
-                    GameState.playerPositionY = playerEntityType.gridPositionY * GameState.tileSize.toFloat() - blockTop
-                    GameState.playerVelocityY = 0f
+                    GameState.playerPositionYOffsetInTiles =
+                        playerEntityType.gridPositionY * GameState.tileSize.toFloat() - blockTop
+                    GameState.playerVelocityYInTiles = 0f
                     break
                 }
             }
 
             // AI-gen: resolve Y collisions (only vertical, no more axis-picking)
             for (block in terrainBlocks) {
-                val pWorldX = playerEntityType.gridPositionX * GameState.tileSize + GameState.playerPositionX
-                val pWorldY = playerEntityType.gridPositionY * GameState.tileSize - GameState.playerPositionY
+                val pWorldX = GameState.playerWorldX
+                val pWorldY = GameState.playerWorldY
 
                 val playerRight = pWorldX + GameState.tileSize
                 val playerTop = pWorldY + GameState.tileSize
 
                 val blockLeft = block.gridPositionX * GameState.tileSize
                 val blockRight = blockLeft + GameState.tileSize
-                val blockBottom = block.gridPositionY * GameState.tileSize
-                val blockTop = blockBottom + GameState.tileSize
+                val blockBottom = block.gridPositionY * tileSize
+                val blockTop = blockBottom + tileSize
 
                 if (playerRight > blockLeft && pWorldX < blockRight &&
                     playerTop > blockBottom && pWorldY < blockTop
@@ -310,14 +318,12 @@ object Game {
                     val overlapTop = blockTop - pWorldY
                     val overlapBottom = playerTop - blockBottom
                     if (overlapTop < overlapBottom) {
-                        GameState.playerPositionY =
-                            playerEntityType.gridPositionY * GameState.tileSize.toFloat() - blockTop
-                        GameState.playerVelocityY = 0f
+                        GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
+                        GameState.playerVelocityYInTiles = 0f
                         GameState.playerIsGrounded = true
                     } else {
-                        GameState.playerPositionY =
-                            playerEntityType.gridPositionY * GameState.tileSize - (blockBottom - GameState.tileSize.toFloat())
-                        GameState.playerVelocityY = 0f
+                        GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY - 1.0f)
+                        GameState.playerVelocityYInTiles = 0f
                     }
                 }
             }
