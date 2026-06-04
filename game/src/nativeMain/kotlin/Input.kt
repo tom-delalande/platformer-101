@@ -13,12 +13,18 @@ enum class Input {
     KeyboardA,
     KeyboardD,
 
-    // AI-generated: controller inputs
-    ControllerLeft,
-    ControllerRight,
-    ControllerUp,
+    SwitchControllerDPadLeft,
+    SwitchControllerDPadRight,
+    SwitchControllerDPadUp,
+    SwitchControllerDPadDown,
 
-    ControllerHome,
+    SwitchControllerLJoyStickLeft,
+    SwitchControllerLJoyStickRight,
+    SwitchControllerLJoyStickUp,
+    SwitchControllerLJoyStickDown,
+
+    SwitchControllerA,
+    SwitchControllerB,
 }
 
 fun Input.isNewlyPressed() = GameState.isPressed.contains(this) && !GameState.wasPressed.contains(this)

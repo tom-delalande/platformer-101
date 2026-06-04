@@ -128,11 +128,11 @@ object Game {
                 val friction = 1f
 
                 // AI-generated: added controller input support
-                if (Input.KeyboardD.isPressed() || Input.ControllerRight.isPressed()) {
+                if (Input.KeyboardD.isPressed() || Input.SwitchControllerDPadRight.isPressed() || Input.SwitchControllerLJoyStickRight.isPressed()) {
                     GameState.playerVelocityX = min(GameState.playerVelocityX + speed, maxVelocity)
                     playSound("Walk")
                 }
-                if (Input.KeyboardA.isPressed() || Input.ControllerLeft.isPressed()) {
+                if (Input.KeyboardA.isPressed() || Input.SwitchControllerDPadLeft.isPressed() || Input.SwitchControllerLJoyStickLeft.isPressed()) {
                     GameState.playerVelocityX = max(GameState.playerVelocityX - speed, -maxVelocity)
                     playSound("Walk")
                 }
@@ -168,17 +168,17 @@ object Game {
                 val jumpSpeed = 10f
                 val gravity = 6f
                 // AI-generated: added controller input support
-                if ((Input.KeyboardW.isPressed() || Input.ControllerUp.isPressed()) && GameState.playerIsJumping) {
+                if ((Input.KeyboardW.isPressed() || Input.SwitchControllerA.isPressed()) && GameState.playerIsJumping) {
                     GameState.playerVelocityY = min(GameState.playerVelocityY + jumpSpeed, maxJumpVelocity)
                 }
 
-                if ((Input.KeyboardW.isNewlyPressed() || Input.ControllerUp.isNewlyPressed()) && GameState.playerIsGrounded) {
+                if ((Input.KeyboardW.isNewlyPressed() || Input.SwitchControllerA.isNewlyPressed()) && GameState.playerIsGrounded) {
                     GameState.playerIsJumping = true
                     playSound("Jump")
                     GameState.playerVelocityY = min(GameState.playerVelocityY + jumpSpeed, maxJumpVelocity)
                 }
 
-                if ((!Input.KeyboardW.isPressed() && !Input.ControllerUp.isPressed()) || GameState.playerVelocityY >= maxJumpVelocity) GameState.playerIsJumping =
+                if ((!Input.KeyboardW.isPressed() && !Input.SwitchControllerA.isPressed()) || GameState.playerVelocityY >= maxJumpVelocity) GameState.playerIsJumping =
                     false
 
 

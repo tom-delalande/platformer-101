@@ -46,38 +46,62 @@ object Sprite {
                 width = 128,
                 height = 128,
             ),
-            "Switch_A" to Sprite(
+            Input.SwitchControllerA.name to Sprite(
                 texture = "Assets/Inputs/SGamepad/Default/T_S_A.png",
                 numberOfFrames = 1,
                 width = 128,
                 height = 128,
             ),
-            "Switch_B" to Sprite(
+            Input.SwitchControllerB.name to Sprite(
                 texture = "Assets/Inputs/SGamepad/Default/T_S_B.png",
                 numberOfFrames = 1,
                 width = 128,
                 height = 128,
             ),
-            "Switch_Left" to Sprite(
+            Input.SwitchControllerDPadLeft.name to Sprite(
                 texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Left.png",
                 numberOfFrames = 1,
                 width = 128,
                 height = 128,
             ),
-            "Switch_Right" to Sprite(
+            Input.SwitchControllerDPadRight.name to Sprite(
                 texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Right.png",
                 numberOfFrames = 1,
                 width = 128,
                 height = 128,
             ),
-            "Switch_Up" to Sprite(
+            Input.SwitchControllerDPadUp.name to Sprite(
                 texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Up.png",
                 numberOfFrames = 1,
                 width = 128,
                 height = 128,
             ),
-            "Switch_Down" to Sprite(
+            Input.SwitchControllerDPadDown.name to Sprite(
                 texture = "Assets/Inputs/SGamepad/Default/T_S_Dpad_Down.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            Input.SwitchControllerLJoyStickLeft.name to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_L_Left.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            Input.SwitchControllerLJoyStickRight.name to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_L_Right.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            Input.SwitchControllerLJoyStickUp.name to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_L_Up.png",
+                numberOfFrames = 1,
+                width = 128,
+                height = 128,
+            ),
+            Input.SwitchControllerLJoyStickDown.name to Sprite(
+                texture = "Assets/Inputs/SGamepad/Default/T_S_L_Down.png",
                 numberOfFrames = 1,
                 width = 128,
                 height = 128,

@@ -21,11 +21,13 @@ import raylib.EndDrawing
 import raylib.FLAG_WINDOW_UNDECORATED
 import raylib.GAMEPAD_AXIS_LEFT_X
 import raylib.GAMEPAD_AXIS_LEFT_Y
+import raylib.GAMEPAD_BUTTON_LEFT_FACE_DOWN
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_UP
-import raylib.GAMEPAD_BUTTON_MIDDLE
 import raylib.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
+import raylib.GAMEPAD_BUTTON_MIDDLE
+import raylib.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
 import raylib.GetCurrentMonitor
 import raylib.GetGamepadAxisMovement
 import raylib.GetMonitorHeight
@@ -84,27 +86,31 @@ object Engine {
             if (IsKeyDown(KEY_W.toInt())) add(Input.KeyboardW)
             if (IsKeyDown(KEY_A.toInt())) add(Input.KeyboardA)
             if (IsKeyDown(KEY_D.toInt())) add(Input.KeyboardD)
-            // AI-generated: gamepad input polling
             if (IsGamepadAvailable(0)) {
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT.toInt()) || GetGamepadAxisMovement(
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT.toInt())) add(Input.SwitchControllerDPadLeft)
+                if (GetGamepadAxisMovement(
                         0,
                         GAMEPAD_AXIS_LEFT_X.toInt()
                     ) < -0.5f
-                ) add(Input.ControllerLeft)
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT.toInt()) || GetGamepadAxisMovement(
+                ) add(Input.SwitchControllerLJoyStickLeft)
+
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT.toInt())) add(Input.SwitchControllerDPadRight)
+                if (GetGamepadAxisMovement(
                         0,
                         GAMEPAD_AXIS_LEFT_X.toInt()
                     ) > 0.5f
-                ) add(Input.ControllerRight)
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP.toInt()) || GetGamepadAxisMovement(
-                        0,
-                        GAMEPAD_AXIS_LEFT_Y.toInt()
-                    ) < -0.5f || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN.toInt())
-                ) add(Input.ControllerUp)
+                ) add(Input.SwitchControllerLJoyStickRight)
+
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP.toInt())) add(Input.SwitchControllerDPadUp)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN.toInt())) add(Input.SwitchControllerDPadDown)
+                if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y.toInt()) < -0.5f) add(Input.SwitchControllerLJoyStickUp)
+                if (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y.toInt()) > 0.5f) add(Input.SwitchControllerLJoyStickDown)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT.toInt())) add(Input.SwitchControllerA)
+                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN.toInt())) add(Input.SwitchControllerB)
+
                 if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_MIDDLE.toInt())) {
                     throw CloseGameException()
                 }
-
             }
         }
 
@@ -233,9 +239,18 @@ object Engine {
                             Input.KeyboardA -> Sprite.sprites["Keyboard_A"]!!
                             Input.KeyboardD -> Sprite.sprites["Keyboard_D"]!!
                             Input.KeyboardS -> Sprite.sprites["Keyboard_S"]!!
-                            Input.ControllerLeft -> Sprite.sprites["Switch_Left"]!!
-                            Input.ControllerRight -> Sprite.sprites["Switch_Right"]!!
-                            Input.ControllerUp -> Sprite.sprites["Switch_Up"]!!
+                            Input.SwitchControllerDPadRight,
+                            Input.SwitchControllerDPadUp,
+                            Input.SwitchControllerDPadDown,
+                            Input.SwitchControllerA,
+                            Input.SwitchControllerB,
+                            Input.SwitchControllerLJoyStickDown,
+                            Input.SwitchControllerLJoyStickUp,
+                            Input.SwitchControllerLJoyStickLeft,
+                            Input.SwitchControllerLJoyStickRight,
+                            Input.SwitchControllerDPadLeft,
+                                -> Sprite.sprites[key.name]!!
+
                             else -> null
                         }
                         if (sprite != null) {
