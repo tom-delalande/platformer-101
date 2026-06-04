@@ -306,8 +306,7 @@ object Game {
                     playerBottom >= blockTop - groundedTolerance && playerBottom <= blockTop + groundedTolerance
                 ) {
                     GameState.playerIsGrounded = true
-                    GameState.playerPositionYOffsetInTiles =
-                        playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
+                    GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
                     GameState.playerVelocityYInTiles = 0f
                     break
                 }
@@ -337,8 +336,7 @@ object Game {
                         GameState.playerVelocityYInTiles = 0f
                         GameState.playerIsGrounded = true
                     } else {
-                        GameState.playerPositionYOffsetInTiles =
-                            playerEntityType.gridPositionY - (block.gridPositionY - 1.0f)
+                        GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
                         GameState.playerVelocityYInTiles = 0f
                     }
                 }
