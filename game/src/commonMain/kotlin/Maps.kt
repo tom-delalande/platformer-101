@@ -16,7 +16,7 @@ object Map {
     )
 
     fun load() {
-        val content = Utils.readTextFile(GameState.currentMap)
+        val content = readTextFile(GameState.currentMap)
         if (content != null) {
             GameState.map = Json.decodeFromString(content)
         } else {
@@ -25,7 +25,7 @@ object Map {
     }
 
     fun save() {
-        Utils.writeTextFile(GameState.currentMap, Json.encodeToString(GameState.map))
+        writeTextFile(GameState.currentMap, Json.encodeToString(GameState.map))
         println("${GameState.currentMap} saved")
     }
 }

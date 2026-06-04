@@ -10,3 +10,9 @@ build/docker/
 native/raylib/raylib-6.0_linux_arm64/lib
 native/lib
 native/include
+
+# Native per-platform libraries
+native/linuxArm64
+native/linuxX64
+native/mingwX64
+!/scripts/build/

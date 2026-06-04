@@ -1,78 +1,29 @@
-@file:OptIn(ExperimentalForeignApi::class)
-
-// AI-generated: gamepad imports
-import engine.color
-import engine.toEngine
 import game.Animation
 import game.GameState
 import game.Input
 import game.SceneType
 import game.Sprite
 import game.Static
-import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
-import raylib.BeginDrawing
-import raylib.ClearBackground
-import raylib.DrawRectangle
-import raylib.DrawText
-import raylib.EndDrawing
-import raylib.FLAG_WINDOW_UNDECORATED
-import raylib.GAMEPAD_AXIS_LEFT_X
-import raylib.GAMEPAD_AXIS_LEFT_Y
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_DOWN
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
-import raylib.GAMEPAD_BUTTON_LEFT_FACE_UP
-import raylib.GAMEPAD_BUTTON_MIDDLE
-import raylib.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
-import raylib.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
-import raylib.GetCurrentMonitor
-import raylib.GetGamepadAxisMovement
-import raylib.GetMonitorHeight
-import raylib.GetMonitorWidth
-import raylib.GetMousePosition
-import raylib.InitAudioDevice
-import raylib.InitWindow
-import raylib.IsGamepadAvailable
-import raylib.IsGamepadButtonDown
-import raylib.IsKeyDown
-import raylib.IsMouseButtonDown
-import raylib.IsSoundPlaying
-import raylib.KEY_A
-import raylib.KEY_D
-import raylib.KEY_E
-import raylib.KEY_L
-import raylib.KEY_P
-import raylib.KEY_S
-import raylib.KEY_W
-import raylib.MOUSE_BUTTON_LEFT
-import raylib.MOUSE_BUTTON_RIGHT
-import raylib.PlaySound
-import raylib.SetConfigFlags
-import raylib.SetTargetFPS
-import raylib.SetWindowPosition
-import raylib.SetWindowSize
 
 object Engine {
     var WINDOW_WIDTH: Int = 800
     var WINDOW_HEIGHT: Int = 600
     const val TARGET_FPS = 30
-    private val RAYWHITE = color(245, 245, 245)
+    private val RAYWHITE = Color(245, 245, 245, 255)
 
     fun init() {
-        SetConfigFlags(FLAG_WINDOW_UNDECORATED)
-        InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
-        InitAudioDevice()
-        SetTargetFPS(TARGET_FPS)
-        val display = GetCurrentMonitor()
-        WINDOW_WIDTH = GetMonitorWidth(display)
-        WINDOW_HEIGHT = GetMonitorHeight(display)
-        SetWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        SetWindowPosition(0, 0)
+        Platform.setConfigFlags(Platform.FLAG_WINDOW_UNDECORATED)
+        Platform.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
+        Platform.initAudioDevice()
+        Platform.setTargetFPS(TARGET_FPS)
+        val display = Platform.getCurrentMonitor()
+        WINDOW_WIDTH = Platform.getMonitorWidth(display)
+        WINDOW_HEIGHT = Platform.getMonitorHeight(display)
+        Platform.setWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
+        Platform.setWindowPosition(0, 0)
 //        HideCursor()
     }
 
@@ -80,62 +31,63 @@ object Engine {
         GameState.wasPressed = GameState.isPressed
 
         GameState.isPressed = buildList {
-            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT.toInt())) add(Input.Mouse1)
-            if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT.toInt())) add(Input.Mouse2)
-            if (IsKeyDown(KEY_S.toInt())) add(Input.KeyboardS)
-            if (IsKeyDown(KEY_L.toInt())) add(Input.KeyboardL)
-            if (IsKeyDown(KEY_P.toInt())) add(Input.KeyboardP)
-            if (IsKeyDown(KEY_E.toInt())) add(Input.KeyboardE)
-            if (IsKeyDown(KEY_W.toInt())) add(Input.KeyboardW)
-            if (IsKeyDown(KEY_A.toInt())) add(Input.KeyboardA)
-            if (IsKeyDown(KEY_D.toInt())) add(Input.KeyboardD)
-            if (IsGamepadAvailable(0)) {
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT.toInt())) add(Input.SwitchControllerDPadLeft)
-                if (GetGamepadAxisMovement(
+            if (Platform.isMouseButtonDown(Platform.MOUSE_BUTTON_LEFT)) add(Input.Mouse1)
+            if (Platform.isMouseButtonDown(Platform.MOUSE_BUTTON_RIGHT)) add(Input.Mouse2)
+            if (Platform.isKeyDown(Platform.KEY_S)) add(Input.KeyboardS)
+            if (Platform.isKeyDown(Platform.KEY_L)) add(Input.KeyboardL)
+            if (Platform.isKeyDown(Platform.KEY_P)) add(Input.KeyboardP)
+            if (Platform.isKeyDown(Platform.KEY_E)) add(Input.KeyboardE)
+            if (Platform.isKeyDown(Platform.KEY_W)) add(Input.KeyboardW)
+            if (Platform.isKeyDown(Platform.KEY_A)) add(Input.KeyboardA)
+            if (Platform.isKeyDown(Platform.KEY_D)) add(Input.KeyboardD)
+            if (Platform.isGamepadAvailable(0)) {
+                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_LEFT)) add(Input.SwitchControllerDPadLeft)
+                if (Platform.getGamepadAxisMovement(
                         0,
-                        GAMEPAD_AXIS_LEFT_X.toInt()
+                        Platform.GAMEPAD_AXIS_LEFT_X
                     ) < -0.5f
                 ) add(Input.SwitchControllerLJoyStickLeft)
 
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT.toInt())) add(Input.SwitchControllerDPadRight)
-                if (GetGamepadAxisMovement(
+                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) add(Input.SwitchControllerDPadRight)
+                if (Platform.getGamepadAxisMovement(
                         0,
-                        GAMEPAD_AXIS_LEFT_X.toInt()
+                        Platform.GAMEPAD_AXIS_LEFT_X
                     ) > 0.5f
                 ) add(Input.SwitchControllerLJoyStickRight)
 
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP.toInt())) add(Input.SwitchControllerDPadUp)
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN.toInt())) add(Input.SwitchControllerDPadDown)
-                if (GetGamepadAxisMovement(
+                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_UP)) add(Input.SwitchControllerDPadUp)
+                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_DOWN)) add(Input.SwitchControllerDPadDown)
+                if (Platform.getGamepadAxisMovement(
                         0,
-                        GAMEPAD_AXIS_LEFT_Y.toInt()
+                        Platform.GAMEPAD_AXIS_LEFT_Y
                     ) < -0.5f
                 ) add(Input.SwitchControllerLJoyStickUp)
-                if (GetGamepadAxisMovement(
+                if (Platform.getGamepadAxisMovement(
                         0,
-                        GAMEPAD_AXIS_LEFT_Y.toInt()
+                        Platform.GAMEPAD_AXIS_LEFT_Y
                     ) > 0.5f
                 ) add(Input.SwitchControllerLJoyStickDown)
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT.toInt())) add(Input.SwitchControllerA)
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN.toInt())) add(Input.SwitchControllerB)
+                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)) add(Input.SwitchControllerA)
+                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) add(Input.SwitchControllerB)
 
-                if (IsGamepadButtonDown(0, GAMEPAD_BUTTON_MIDDLE.toInt())) {
+                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_MIDDLE)) {
                     throw CloseGameException()
                 }
             }
         }
 
-        val mousePosition = GetMousePosition()
-        GameState.mousePositionX = mousePosition.useContents { x.toInt() }
-        GameState.mousePositionY = mousePosition.useContents { y.toInt() }
+        val mousePosition = Platform.getMousePosition()
+        GameState.mousePositionX = mousePosition.x.toInt()
+        GameState.mousePositionY = mousePosition.y.toInt()
     }
 
     fun render() {
-        BeginDrawing()
-        ClearBackground(RAYWHITE)
+        Platform.beginDrawing()
+        Platform.clearBackground(RAYWHITE)
         GameState.sounds.forEach {
-            if (!IsSoundPlaying(it.toEngine())) {
-                PlaySound(it.toEngine());
+            val sound = Assets.fromClip(it)
+            if (!Platform.isSoundPlaying(sound)) {
+                Platform.playSound(sound)
             }
         }
         GameState.sounds.clear()
@@ -158,14 +110,14 @@ object Engine {
         val yOrigin = WINDOW_HEIGHT / 2 - validPlaySpaceOffsetY
         when (GameState.sceneType) {
             SceneType.Editor -> {
-                DrawRectangle(
+                Platform.drawRectangle(
                     -totalOffsetX,
                     WINDOW_HEIGHT / 2 + validPlaySpaceOffsetY,
                     WINDOW_WIDTH + totalOffsetX,
                     GameState.SIZE_Y_IN_TILES * GameState.tileSize,
-                    color(50, 50, 50, 122)
+                    Color(50, 50, 50, 122)
                 )
-                DrawText(GameState.currentMap, 64, 64, 24, color(0, 0, 0))
+                Platform.drawText(GameState.currentMap, 64, 64, 24, Color(0, 0, 0))
                 GameState.renderables.forEach {
                     Render.drawSprite(
                         sprite = it.currentSprite,
@@ -185,7 +137,7 @@ object Engine {
                         outputPositionY = GameState.mousePositionY - 32f,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
-                        tint = color(255, 255, 255, 150),
+                        tint = Color(255, 255, 255, 150),
                     )
                 }
 
@@ -293,7 +245,7 @@ object Engine {
 
         // DrawText("Offset X: ${GameState.playSpaceOffsetX}", 64, 64, 24, color(0, 0, 0))
 
-        EndDrawing()
+        Platform.endDrawing()
     }
 
     suspend fun executeWithFixedFrameRate(block: () -> Unit) {

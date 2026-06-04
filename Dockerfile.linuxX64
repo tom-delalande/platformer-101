@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     libasound2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -L "https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-aarch64.tar.gz" \
+RUN curl -L "https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz" \
     -o /tmp/cmake.tar.gz && \
     tar -xzf /tmp/cmake.tar.gz -C /usr/local --strip-components=1 && \
     rm /tmp/cmake.tar.gz
@@ -23,20 +23,12 @@ RUN cmake -S /tmp/raylib -B /tmp/raylib/build \
         -DBUILD_EXAMPLES=OFF \
         -DBUILD_GAMES=OFF \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_LIBDIR=lib \
-        -DCMAKE_C_FLAGS="-mno-outline-atomics"
+        -DCMAKE_INSTALL_LIBDIR=lib
 
 RUN cmake --build /tmp/raylib/build --parallel $(nproc)
 
 RUN cmake --install /tmp/raylib/build --prefix /tmp/raylib-out && \
     rm -rf /tmp/raylib
-
-RUN echo "=== glibc version ===" && \
-    ldd --version 2>&1 | head -1 && \
-    echo "=== C23 symbols in raylib ===" && \
-    strings /tmp/raylib-out/lib/libraylib.a | grep isoc23 | head -5 || echo "None found (good)" && \
-    echo "=== raylib static lib size ===" && \
-    ls -lh /tmp/raylib-out/lib/libraylib.a
 
 RUN mkdir -p /artifacts/lib /artifacts/include && \
     cp /tmp/raylib-out/lib/libraylib.a /artifacts/lib/ && \
@@ -48,11 +40,6 @@ RUN mkdir -p /artifacts/lib /artifacts/include && \
             -not -name "*.la" -not -name "*.a" 2>/dev/null | \
         while read f; do cp -P "$f" /artifacts/lib/ 2>/dev/null; done; \
     done && \
-    if [ -f /artifacts/lib/libatomic.so.1.2.0 ]; then \
-        rm -f /artifacts/lib/libatomic.so && \
-        cp /artifacts/lib/libatomic.so.1.2.0 /artifacts/lib/libatomic.so && \
-        ln -sf libatomic.so.1.2.0 /artifacts/lib/libatomic.so.1; \
-    fi && \
     echo "=== Files in lib/ ===" && \
     ls -la /artifacts/lib/
 

@@ -1,2 +1,0 @@
-
-val debug = true

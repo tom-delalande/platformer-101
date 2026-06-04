@@ -1,0 +1,72 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install MinGW cross-compiler and build tools
+RUN apt-get update && apt-get install -y \
+    gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 \
+    mingw-w64-tools \
+    cmake make git curl pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install CMake (use system cmake for simplicity)
+# Set up MinGW toolchain
+RUN mkdir -p /tmp/sdl2-build
+
+# Download and build SDL2 for MinGW
+RUN curl -L "https://github.com/libsdl-org/SDL/releases/download/release-2.30.9/SDL2-2.30.9.tar.gz" \
+    -o /tmp/sdl2.tar.gz && \
+    tar -xzf /tmp/sdl2.tar.gz -C /tmp/sdl2-build --strip-components=1 && \
+    rm /tmp/sdl2.tar.gz
+
+RUN mkdir -p /tmp/sdl2-build/build && \
+    cd /tmp/sdl2-build/build && \
+    cmake .. \
+        -DCMAKE_SYSTEM_NAME=Windows \
+        -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+        -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+        -DCMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32 \
+        -DCMAKE_INSTALL_PREFIX=/usr/x86_64-w64-mingw32 \
+        -DSDL_TEST=OFF \
+        -DSDL_STATIC=ON \
+        -DSDL_SHARED=OFF \
+        -G "Unix Makefiles" && \
+    cmake --build . --parallel $(nproc) && \
+    cmake --install . && \
+    rm -rf /tmp/sdl2-build
+
+# Build raylib for Windows (MinGW)
+RUN git clone --branch 6.0 --depth 1 https://github.com/raysan5/raylib.git /tmp/raylib
+
+RUN mkdir -p /tmp/raylib/build && \
+    cd /tmp/raylib/build && \
+    cmake .. \
+        -DCMAKE_SYSTEM_NAME=Windows \
+        -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+        -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+        -DCMAKE_FIND_ROOT_PATH=/usr/x86_64-w64-mingw32 \
+        -DCMAKE_INSTALL_PREFIX=/tmp/raylib-out \
+        -DPLATFORM="SDL" \
+        -DGRAPHICS="GRAPHICS_API_OPENGL_33" \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_GAMES=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -G "Unix Makefiles" && \
+    cmake --build . --parallel $(nproc) && \
+    cmake --install . && \
+    rm -rf /tmp/raylib
+
+RUN mkdir -p /artifacts/lib /artifacts/include && \
+    cp /tmp/raylib-out/lib/libraylib.a /artifacts/lib/ && \
+    cp /tmp/raylib-out/include/raylib.h /artifacts/include/ && \
+    cp /tmp/raylib-out/include/raymath.h /artifacts/include/ && \
+    cp /tmp/raylib-out/include/rlgl.h /artifacts/include/ && \
+    cp /usr/x86_64-w64-mingw32/lib/libSDL2.a /artifacts/lib/ 2>/dev/null || true && \
+    echo "=== Files in lib/ ===" && \
+    ls -la /artifacts/lib/ && \
+    echo "=== Files in include/ ===" && \
+    ls -la /artifacts/include/
+
+CMD cp -r /artifacts/* /output/
