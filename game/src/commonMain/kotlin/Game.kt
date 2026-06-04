@@ -331,13 +331,19 @@ object Game {
                     val overlapTop = blockTop - pWorldY
                     val overlapBottom = playerTop - blockBottom
                     if (overlapTop < overlapBottom) {
-                        GameState.playerPositionYOffsetInTiles =
-                            playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
+                        GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
                         GameState.playerVelocityYInTiles = 0f
                         GameState.playerIsGrounded = true
                     } else {
-                        GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
+                        // If you jump from high enough you have too much velocity and collide with the bottom of the floor
+                        // (next frame puts you underneath) and you fall through the ground
+                        // That's why this collision is a bit different
+                        // Might be worth switching the other ones to use this model, but not necessary at the moment
+                        GameState.playerPositionYOffsetInTiles += GameState.playerVelocityYInTiles
                         GameState.playerVelocityYInTiles = 0f
+
+                        // Prevent user from sticking to roof by holding up
+                        GameState.playerIsJumping = false
                     }
                 }
             }
