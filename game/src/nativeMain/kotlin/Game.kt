@@ -209,10 +209,11 @@ object Game {
                 if (GameState.map.isNotEmpty()) {
                     val maxX = GameState.map.maxOf { it.gridPositionX } * GameState.tileSize
                     val minX = GameState.map.minOf { it.gridPositionX } * GameState.tileSize
+                    val playerOnScreenPositionX = GameState.playerWorldX - playSpaceOffsetX
                     val diffX = maxX - minX
-                    if (GameState.playerPositionXOffsetInTiles > GameState.windowWidth / 2 && maxX >= (GameState.windowWidth + GameState.cameraOffsetX - tileSize) && diffX > GameState.windowWidth) {
+                    if (playerOnScreenPositionX > GameState.windowWidth / 2 && maxX >= (GameState.windowWidth + GameState.cameraOffsetX - tileSize) && diffX > GameState.windowWidth) {
                         GameState.cameraOffsetX =
-                            (GameState.playerPositionXOffsetInTiles - (GameState.windowWidth / 2)).toInt()
+                            (playerOnScreenPositionX - (GameState.windowWidth / 2)).toInt()
                     }
                 }
 
@@ -262,10 +263,10 @@ object Game {
                     val overlapRight = blockRight - pWorldX
                     if (overlapLeft < overlapRight) {
                         GameState.playerPositionXOffsetInTiles =
-                            blockLeft - GameState.tileSize - playerEntityType.gridPositionX * GameState.tileSize.toFloat()
+                            block.gridPositionX - 1.0f - playerEntityType.gridPositionX
                     } else {
                         GameState.playerPositionXOffsetInTiles =
-                            blockRight - playerEntityType.gridPositionX * GameState.tileSize.toFloat()
+                            block.gridPositionX + 1.0f - playerEntityType.gridPositionX
                     }
                     GameState.playerVelocityXInTiles = 0f
                 }
@@ -293,7 +294,7 @@ object Game {
                 ) {
                     GameState.playerIsGrounded = true
                     GameState.playerPositionYOffsetInTiles =
-                        playerEntityType.gridPositionY * GameState.tileSize.toFloat() - blockTop
+                        playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
                     GameState.playerVelocityYInTiles = 0f
                     break
                 }
@@ -318,11 +319,13 @@ object Game {
                     val overlapTop = blockTop - pWorldY
                     val overlapBottom = playerTop - blockBottom
                     if (overlapTop < overlapBottom) {
-                        GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
+                        GameState.playerPositionYOffsetInTiles =
+                            playerEntityType.gridPositionY - (block.gridPositionY + 1.0f)
                         GameState.playerVelocityYInTiles = 0f
                         GameState.playerIsGrounded = true
                     } else {
-                        GameState.playerPositionYOffsetInTiles = playerEntityType.gridPositionY - (block.gridPositionY - 1.0f)
+                        GameState.playerPositionYOffsetInTiles =
+                            playerEntityType.gridPositionY - (block.gridPositionY - 1.0f)
                         GameState.playerVelocityYInTiles = 0f
                     }
                 }

@@ -11,7 +11,6 @@ object Physics {
         val pWorldX = GameState.playerWorldX
         val pWorldY = GameState.playerWorldY
 
-
         val playerRight = pWorldX + GameState.tileSize
         val playerTop = pWorldY + GameState.tileSize
 
