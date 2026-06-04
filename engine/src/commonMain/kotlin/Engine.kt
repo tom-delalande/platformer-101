@@ -232,7 +232,7 @@ object Engine {
                                 outputWidth = keyIconSize,
                                 outputHeight = keyIconSize,
                                 outputPositionX = x,
-                                outputPositionY = playerWorldY - GameState.tileSize.toFloat(),
+                                outputPositionY = playerWorldY - 1.5f * GameState.tileSize.toFloat(),
                             )
                         }
                     }
