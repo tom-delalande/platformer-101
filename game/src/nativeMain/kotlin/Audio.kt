@@ -13,6 +13,7 @@ object Audio {
             "Pickup" to Clip("Assets/Audio/Pickup Coin3.wav"),
             "Walk" to Clip("Assets/Audio/walk 2 medium.wav"),
             "Door" to Clip("Assets/Audio/door open.wav"),
+            "Fall" to Clip("Assets/Audio/fall.wav"),
         )
     }
 }

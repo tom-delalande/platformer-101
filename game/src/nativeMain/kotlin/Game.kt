@@ -61,11 +61,12 @@ object Game {
                         }
 
                         val validPlaySpaceOffsetY = -(GameState.SIZE_Y_IN_TILES * GameState.tileSize / 2)
-                        val gridY = if (GameState.mousePositionY > (GameState.windowHeight / 2 - validPlaySpaceOffsetY)) {
-                            ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY - tileSize) / tileSize
-                        } else {
-                            ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY) / tileSize
-                        }
+                        val gridY =
+                            if (GameState.mousePositionY > (GameState.windowHeight / 2 - validPlaySpaceOffsetY)) {
+                                ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY - tileSize) / tileSize
+                            } else {
+                                ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY) / tileSize
+                            }
 
                         GameState.map.removeAll { it.gridPositionX == gridX && it.gridPositionY == gridY }
                         GameState.map.add(
@@ -135,6 +136,7 @@ object Game {
                         when (mapEntity.entity) {
                             EntityType.Finish -> {
                                 GameState.autoLoadNextMap()
+                                playSound("Door")
                             }
 
                             EntityType.Strawberry -> {
@@ -208,8 +210,16 @@ object Game {
                     }
                 }
 
+                // Check fall
+                if (GameState.playerPositionYOffsetInTiles > 2) {
+                    GameState.playerPositionXOffsetInTiles = GameState.playerEntity?.gridPositionX?.toFloat()!!
+                    GameState.playerPositionYOffsetInTiles = GameState.playerEntity?.gridPositionY?.toFloat()!! - 1
+                    GameState.cameraOffsetX = 0
+                    playSound("Fall")
+                }
+
                 // Check finish level
-                if (GameState.map.count { it.entity == EntityType.Strawberry } == 0) {
+                if (GameState.map.count { it.entity == EntityType.Strawberry } == 0 && GameState.map.none { it.entity == EntityType.Finish }) {
                     GameState.autoLoadNextMap()
                     playSound("Door")
                 }
