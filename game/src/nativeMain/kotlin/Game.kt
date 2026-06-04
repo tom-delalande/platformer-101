@@ -1,5 +1,7 @@
 package game
 
+import game.GameState.maxXTile
+import game.GameState.minXTile
 import game.GameState.playSound
 import game.GameState.playSpaceOffsetX
 import game.GameState.playSpaceOffsetY
@@ -27,18 +29,10 @@ object Game {
     }
 
     fun setPlaySpaceOffset() {
+        playSpaceOffsetY = -(3 * tileSize)
+
         if (GameState.map.isEmpty()) return
-
-        val maxYTile = GameState.map.maxOf { it.gridPositionY }
-        val minYTile = GameState.map.minOf { it.gridPositionY }
-        val playSpaceYSizeInTiles = (maxYTile - minYTile)
-        playSpaceOffsetY =
-            -(GameState.windowHeight / 2 - (tileSize * playSpaceYSizeInTiles) / 1.5).toInt() + minYTile * tileSize
-
-        val maxXTile = GameState.map.maxOf { it.gridPositionX }
-        val minXTile = GameState.map.minOf { it.gridPositionX }
         val playSpaceXSizeInTiles = (maxXTile - minXTile)
-        println(playSpaceXSizeInTiles)
         playSpaceOffsetX = if (abs(tileSize * playSpaceXSizeInTiles) < GameState.windowWidth) {
             -(GameState.windowWidth / 2 - (tileSize * playSpaceXSizeInTiles) / 2) + minXTile * tileSize
         } else {
@@ -50,7 +44,6 @@ object Game {
         when (GameState.sceneType) {
             SceneType.Editor -> {
                 if (Input.Mouse1.isPressed()) {
-                    println("mouse pressed")
                     val hit = GameState.uiElements.firstOrNull { ui ->
                         val outputPositionX = ui.outputPositionXTile * tileSize
                         val outputPositionY = ui.outputPositionYTile * tileSize
@@ -61,49 +54,48 @@ object Game {
                         GameState.selectedUIElement = hit
                     } else if (GameState.selectedUIElement != null) {
                         val totalOffsetX = GameState.cameraOffsetX + playSpaceOffsetX
-                        val gridX = ((GameState.mousePositionX + totalOffsetX) / tileSize).let {
-                            if (it < 0) {
-                                it - 1
-                            } else {
-                                it
-                            }
+                        val gridX = if (GameState.mousePositionX + totalOffsetX < 0) {
+                            (GameState.mousePositionX + totalOffsetX - tileSize) / tileSize
+                        } else {
+                            (GameState.mousePositionX + totalOffsetX) / tileSize
                         }
-                        val gridY =
-                            ((GameState.windowHeight - GameState.mousePositionY + tileSize + playSpaceOffsetY) / tileSize)
-                        if (GameState.map.none { it.gridPositionX == gridX && it.gridPositionY == gridY }) {
-                            GameState.map.add(
-                                MapEntity(
-                                    gridPositionX = gridX,
-                                    gridPositionY = gridY,
-                                    entity = GameState.selectedUIElement!!.entityType
-                                )
+
+                        val validPlaySpaceOffsetY = -(GameState.SIZE_Y_IN_TILES * GameState.tileSize / 2)
+                        val gridY = if (GameState.mousePositionY > (GameState.windowHeight / 2 - validPlaySpaceOffsetY)) {
+                            ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY - tileSize) / tileSize
+                        } else {
+                            ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY) / tileSize
+                        }
+
+                        GameState.map.removeAll { it.gridPositionX == gridX && it.gridPositionY == gridY }
+                        GameState.map.add(
+                            MapEntity(
+                                gridPositionX = gridX,
+                                gridPositionY = gridY,
+                                entity = GameState.selectedUIElement!!.entityType
                             )
-                            Map.save()
-                            GameState.initialiseRenderables()
-                        }
+                        )
+                        Map.save()
+                        GameState.initialiseRenderables()
                     }
                 }
                 if (Input.Mouse2.isPressed()) {
                     val totalOffsetX = GameState.cameraOffsetX + GameState.playSpaceOffsetX
-                    val gridX = ((GameState.mousePositionX + totalOffsetX) / GameState.tileSize).let {
-                        if (it < 0) {
-                            it - 1
-                        } else {
-                            it
-                        }
+                    val gridX = if (GameState.mousePositionX + totalOffsetX < 0) {
+                        (GameState.mousePositionX + totalOffsetX - tileSize) / tileSize
+                    } else {
+                        (GameState.mousePositionX + totalOffsetX) / tileSize
                     }
-                    val gridY =
-                        (GameState.windowHeight - GameState.mousePositionY + GameState.tileSize + playSpaceOffsetY) / GameState.tileSize
+
+                    val validPlaySpaceOffsetY = -(GameState.SIZE_Y_IN_TILES * GameState.tileSize / 2)
+                    val gridY = if (GameState.mousePositionY > (GameState.windowHeight / 2 - validPlaySpaceOffsetY)) {
+                        ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY - tileSize) / tileSize
+                    } else {
+                        ((GameState.windowHeight / 2 - validPlaySpaceOffsetY) - GameState.mousePositionY) / tileSize
+                    }
                     GameState.map.removeAll { it.gridPositionX == gridX && it.gridPositionY == gridY }
                     Map.save()
                     GameState.initialiseRenderables()
-                }
-
-                if (Input.KeyboardS.isNewlyPressed()) {
-                    Map.save()
-                }
-                if (Input.KeyboardL.isNewlyPressed()) {
-                    Map.load()
                 }
                 if (Input.KeyboardP.isNewlyPressed()) {
                     GameState.loadMap(sceneType = SceneType.Play)
@@ -129,7 +121,6 @@ object Game {
                 val maxVelocity = 10f / 64
                 val friction = 1f / 64
 
-                // AI-generated: added controller input support
                 if (Input.KeyboardD.isPressed() || Input.SwitchControllerDPadRight.isPressed() || Input.SwitchControllerLJoyStickRight.isPressed()) {
                     GameState.playerVelocityXInTiles = min(GameState.playerVelocityXInTiles + speed, maxVelocity)
                     playSound("Walk")
@@ -202,16 +193,16 @@ object Game {
                 GameState.backgroundOffsetY -= 1
 
                 if (Input.KeyboardE.isNewlyPressed()) {
-                    GameState.sceneType = SceneType.Editor
+                    GameState.loadMap(sceneType = SceneType.Editor)
                 }
 
                 // Scroll screen
                 if (GameState.map.isNotEmpty()) {
-                    val maxX = GameState.map.maxOf { it.gridPositionX } * GameState.tileSize
-                    val minX = GameState.map.minOf { it.gridPositionX } * GameState.tileSize
+                    val maxX = maxXTile * tileSize + tileSize + 2 * tileSize
+                    val minX = minXTile * tileSize
                     val playerOnScreenPositionX = GameState.playerWorldX - playSpaceOffsetX
                     val diffX = maxX - minX
-                    if (playerOnScreenPositionX > GameState.windowWidth / 2 && maxX >= (GameState.windowWidth + GameState.cameraOffsetX - tileSize) && diffX > GameState.windowWidth) {
+                    if (playerOnScreenPositionX > GameState.windowWidth / 2 && maxX >= (GameState.windowWidth + GameState.cameraOffsetX) && diffX > GameState.windowWidth) {
                         GameState.cameraOffsetX =
                             (playerOnScreenPositionX - (GameState.windowWidth / 2)).toInt()
                     }
@@ -234,14 +225,24 @@ object Game {
     }
 
     private fun processTerrainCollisions() {
+        val terrainEntities = listOf(
+            EntityType.Terrain,
+            EntityType.WoodBox,
+            EntityType.GrassLeft,
+            EntityType.GrassMiddle,
+            EntityType.GrassRight,
+            EntityType.DirtLeft,
+            EntityType.DirtMiddle,
+            EntityType.DirtRight,
+
+            )
         // AI-gen: separate X movement from Y movement to prevent edge-landing bug
         GameState.playerPositionXOffsetInTiles += GameState.playerVelocityXInTiles
 
         // AI-gen: handle collisions using separate X then Y resolution
         val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
         if (playerEntityType != null) {
-            val terrainBlocks =
-                GameState.map.filter { it.entity == EntityType.Terrain || it.entity == EntityType.WoodBox }
+            val terrainBlocks = GameState.map.filter { it.entity in terrainEntities }
 
             val pWorldX = GameState.playerWorldX
             val pWorldY = GameState.playerWorldY

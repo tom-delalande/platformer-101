@@ -1,5 +1,7 @@
 package game
 
+import game.Game.setPlaySpaceOffset
+
 object GameState {
     var sceneType: SceneType = SceneType.Play
     lateinit var currentMap: String
@@ -9,13 +11,9 @@ object GameState {
     var playSpaceOffsetX: Int = 0
     var playSpaceOffsetY: Int = 0
 
+    const val SIZE_Y_IN_TILES = 12
+
     var uiElements: List<UIElement> = listOf(
-        UIElement(
-            entityType = EntityType.Terrain,
-            sprite = Sprite.sprites["Terrain"]!!,
-            outputPositionXTile = 1,
-            outputPositionYTile = 2,
-        ),
         UIElement(
             entityType = EntityType.Player,
             sprite = Sprite.sprites["Player_Idle"]!!,
@@ -46,6 +44,36 @@ object GameState {
             outputPositionXTile = 6,
             outputPositionYTile = 2,
         ),
+        UIElement(
+            entityType = EntityType.GrassLeft,
+            outputPositionXTile = 1,
+            outputPositionYTile = 3,
+        ),
+        UIElement(
+            entityType = EntityType.GrassMiddle,
+            outputPositionXTile = 2,
+            outputPositionYTile = 3,
+        ),
+        UIElement(
+            entityType = EntityType.GrassRight,
+            outputPositionXTile = 3,
+            outputPositionYTile = 3,
+        ),
+        UIElement(
+            entityType = EntityType.DirtLeft,
+            outputPositionXTile = 4,
+            outputPositionYTile = 3,
+        ),
+        UIElement(
+            entityType = EntityType.DirtMiddle,
+            outputPositionXTile = 5,
+            outputPositionYTile = 3,
+        ),
+        UIElement(
+            entityType = EntityType.DirtRight,
+            outputPositionXTile = 6,
+            outputPositionYTile = 3,
+        ),
     )
 
     var selectedUIElement: UIElement? = null
@@ -57,6 +85,10 @@ object GameState {
     var mousePositionY: Int = 0
 
     var map: MutableList<MapEntity> = mutableListOf()
+    var maxXTile: Int = 0
+    var minXTile: Int = 0
+    var maxYTile: Int = 0
+    var minYTile: Int = 0
 
     var playerPositionXOffsetInTiles: Float = 0.0f
     var playerPositionYOffsetInTiles: Float = 0.0f
@@ -88,16 +120,23 @@ object GameState {
         playerIsJumping = false
         playerDirection = 1
         cameraOffsetX = 0
+        playerEntity = map.find { it.entity == EntityType.Player }
+        if (map.isNotEmpty()) {
+            maxXTile = map.maxOf { it.gridPositionX }
+            minXTile = map.minOf { it.gridPositionX }
+            maxYTile = map.maxOf { it.gridPositionY }
+            minYTile = map.minOf { it.gridPositionY }
+        }
         initialiseRenderables()
+        setPlaySpaceOffset()
     }
 
-    val playerEntityType: MapEntity?
-        get() = map.find { it.entity == EntityType.Player }
+    var playerEntity: MapEntity? = null
 
     val playerWorldX: Float
-        get() = playerEntityType?.let { (it.gridPositionX + playerPositionXOffsetInTiles) * tileSize } ?: 0.0f
+        get() = playerEntity?.let { (it.gridPositionX + playerPositionXOffsetInTiles) * tileSize } ?: 0.0f
     val playerWorldY: Float
-        get() = playerEntityType?.let { (playerEntityType!!.gridPositionY - playerPositionYOffsetInTiles) * tileSize }
+        get() = playerEntity?.let { (playerEntity!!.gridPositionY - playerPositionYOffsetInTiles) * tileSize }
             ?: 0.0f
 
     fun initialiseRenderables() {
@@ -132,6 +171,7 @@ object GameState {
                 EntityType.RockHead -> Static(mapEntity, Sprite.sprites["RockHead"]!!)
                 EntityType.Finish -> Static(mapEntity, Sprite.sprites["Finish"]!!)
                 EntityType.WoodBox -> Static(mapEntity, Sprite.sprites["WoodBox"]!!)
+                else -> Static(mapEntity, Sprite.sprites[mapEntity.entity.name]!!)
             }
         }.toMutableList()
     }

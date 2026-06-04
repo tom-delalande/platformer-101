@@ -4,12 +4,12 @@
 import engine.color
 import engine.toEngine
 import game.Animation
-import game.EntityType
 import game.GameState
 import game.Input
 import game.SceneType
 import game.Sprite
 import game.Static
+import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -17,6 +17,8 @@ import kotlinx.cinterop.useContents
 import kotlinx.coroutines.delay
 import raylib.BeginDrawing
 import raylib.ClearBackground
+import raylib.DrawRectangle
+import raylib.DrawText
 import raylib.EndDrawing
 import raylib.FLAG_WINDOW_UNDECORATED
 import raylib.GAMEPAD_AXIS_LEFT_X
@@ -25,15 +27,14 @@ import raylib.GAMEPAD_BUTTON_LEFT_FACE_DOWN
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_UP
-import raylib.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
 import raylib.GAMEPAD_BUTTON_MIDDLE
+import raylib.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
 import raylib.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
 import raylib.GetCurrentMonitor
 import raylib.GetGamepadAxisMovement
 import raylib.GetMonitorHeight
 import raylib.GetMonitorWidth
 import raylib.GetMousePosition
-import raylib.HideCursor
 import raylib.InitAudioDevice
 import raylib.InitWindow
 import raylib.IsGamepadAvailable
@@ -72,7 +73,7 @@ object Engine {
         WINDOW_HEIGHT = GetMonitorHeight(display)
         SetWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
         SetWindowPosition(0, 0)
-        HideCursor()
+//        HideCursor()
     }
 
     fun update() {
@@ -153,13 +154,23 @@ object Engine {
         }
 
         val totalOffsetX = GameState.cameraOffsetX + GameState.playSpaceOffsetX
+        val validPlaySpaceOffsetY = -(GameState.SIZE_Y_IN_TILES * GameState.tileSize / 2)
+        val yOrigin = WINDOW_HEIGHT / 2 - validPlaySpaceOffsetY
         when (GameState.sceneType) {
             SceneType.Editor -> {
+                DrawRectangle(
+                    -totalOffsetX,
+                    WINDOW_HEIGHT / 2 + validPlaySpaceOffsetY,
+                    WINDOW_WIDTH + totalOffsetX,
+                    GameState.SIZE_Y_IN_TILES * GameState.tileSize,
+                    color(50, 50, 50, 122)
+                )
+                DrawText(GameState.currentMap, 64, 64, 24, color(0, 0, 0))
                 GameState.renderables.forEach {
                     Render.drawSprite(
                         sprite = it.currentSprite,
                         outputPositionX = (it.mapEntity.gridPositionX * GameState.tileSize.toFloat()) - totalOffsetX,
-                        outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
+                        outputPositionY = yOrigin - GameState.tileSize - (it.mapEntity.gridPositionY * GameState.tileSize.toFloat()),
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
                         // This is the only difference to above, could probably be simplified with better classes
@@ -212,8 +223,7 @@ object Engine {
                         )
                     }
                 }
-                val playerEntityType = GameState.map.find { it.entity == EntityType.Player }
-                if (playerEntityType != null) {
+                if (GameState.playerEntity != null) {
                     val sprite = when {
                         GameState.playerVelocityYInTiles > 0 -> Sprite.sprites["Player_Jump"]
                         GameState.playerVelocityYInTiles < 0 -> Sprite.sprites["Player_Fall"]
@@ -224,7 +234,7 @@ object Engine {
                     Render.drawSprite(
                         sprite = sprite!!,
                         flipHorizontally = GameState.playerDirection == -1,
-                        outputPositionX = playerEntityType.gridPositionX * GameState.tileSize + (GameState.playerPositionXOffsetInTiles * GameState.tileSize) - totalOffsetX,
+                        outputPositionX = GameState.playerEntity!!.gridPositionX * GameState.tileSize + (GameState.playerPositionXOffsetInTiles * GameState.tileSize) - totalOffsetX,
                         outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
@@ -239,7 +249,8 @@ object Engine {
 
 
                     val playerWorldX = GameState.playerWorldX
-                    val playerWorldY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY
+                    val playerWorldY =
+                        (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY
                     val startX = playerWorldX + (GameState.tileSize - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->
@@ -280,7 +291,7 @@ object Engine {
             }
         }
 
-//        DrawText("Offset X: ${GameState.playSpaceOffsetX}", 64, 64, 24, color(0, 0, 0))
+        // DrawText("Offset X: ${GameState.playSpaceOffsetX}", 64, 64, 24, color(0, 0, 0))
 
         EndDrawing()
     }

@@ -16,7 +16,7 @@ enum class SceneType {
 
 data class UIElement(
     val entityType: EntityType,
-    val sprite: Sprite.Sprite,
+    val sprite: Sprite.Sprite = Sprite.sprites[entityType.name]!!,
     val outputPositionXTile: Int,
     val outputPositionYTile: Int,
 )
@@ -30,6 +30,12 @@ enum class EntityType {
     Finish,
     WoodBox,
     Strawberry,
+    GrassLeft,
+    GrassMiddle,
+    GrassRight,
+    DirtLeft,
+    DirtMiddle,
+    DirtRight,
 }
 
 data class Entity(

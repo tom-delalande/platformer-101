@@ -2,6 +2,7 @@ package game
 
 import game.Game.setPlaySpaceOffset
 import kotlinx.serialization.json.Json
+import platform.posix.ILL_BADSTK
 
 object Map {
     val maps = listOf(
@@ -23,7 +24,6 @@ object Map {
         } else {
             GameState.map = mutableListOf()
         }
-        setPlaySpaceOffset()
     }
 
     fun save() {
