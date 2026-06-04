@@ -18,6 +18,7 @@ mkdir -p "$OUTPUT_DIR/platformer/Assets"
 
 cp "$BINARY" "$OUTPUT_DIR/platformer/platformer.kexe"
 cp -r "$PROJECT_DIR/Assets" "$OUTPUT_DIR/platformer"
+cp "$PROJECT_DIR/screenshot.png" "$OUTPUT_DIR/screenshot.png"
 
 LAUNCHER="$OUTPUT_DIR/platformer-launcher.sh"
 cat > "$LAUNCHER" << 'LAUNCHER_EOF'
@@ -50,8 +51,9 @@ cat > "$OUTPUT_DIR/gamelist.xml" << 'GAMELIST_EOF'
 <gameList>
     <game>
         <path>./platformer-launcher.sh</path>
-        <name>Platformer</name>
-        <desc>A Kotlin/Native platformer game powered by raylib</desc>
+        <name>Strawberry Game</name>
+        <desc>A strawberry platformer for new gamers</desc>
+        <image>./screenshot.png</image>
         <rating>0</rating>
         <players>1</players>
     </game>
