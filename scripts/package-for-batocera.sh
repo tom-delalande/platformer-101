@@ -17,8 +17,7 @@ fi
 mkdir -p "$OUTPUT_DIR/platformer/Assets"
 
 cp "$BINARY" "$OUTPUT_DIR/platformer/platformer.kexe"
-cp -r "$PROJECT_DIR/Assets/Maps" "$OUTPUT_DIR/platformer/Assets/Maps"
-cp -r "$PROJECT_DIR/Assets/Inputs" "$OUTPUT_DIR/platformer/Assets/Inputs"
+cp -r "$PROJECT_DIR/Assets" "$OUTPUT_DIR/platformer"
 
 LAUNCHER="$OUTPUT_DIR/platformer-launcher.sh"
 cat > "$LAUNCHER" << 'LAUNCHER_EOF'

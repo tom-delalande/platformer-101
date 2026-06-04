@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import raylib.BeginDrawing
 import raylib.ClearBackground
 import raylib.EndDrawing
+import raylib.FLAG_WINDOW_UNDECORATED
 import raylib.GAMEPAD_AXIS_LEFT_X
 import raylib.GAMEPAD_AXIS_LEFT_Y
 import raylib.GAMEPAD_BUTTON_LEFT_FACE_LEFT
@@ -47,6 +48,7 @@ import raylib.KEY_W
 import raylib.MOUSE_BUTTON_LEFT
 import raylib.MOUSE_BUTTON_RIGHT
 import raylib.PlaySound
+import raylib.SetConfigFlags
 import raylib.SetTargetFPS
 import raylib.SetWindowPosition
 import raylib.SetWindowSize
@@ -58,7 +60,7 @@ object Engine {
     private val RAYWHITE = color(245, 245, 245)
 
     fun init() {
-//        SetConfigFlags(FLAG_WINDOW_UNDECORATED)
+        SetConfigFlags(FLAG_WINDOW_UNDECORATED)
         InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
         InitAudioDevice()
         SetTargetFPS(TARGET_FPS)

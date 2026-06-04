@@ -64,6 +64,7 @@ kotlin {
                     "-L$libs",
                     "-Wl,--allow-shlib-undefined",
                     "-lSDL2",
+                    "-Wl,--as-needed",
                     "-lm",
                     "-lpthread",
                     "-ldl",
