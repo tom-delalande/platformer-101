@@ -9,6 +9,11 @@ repositories {
 
 kotlin {
     jvmToolchain(21)
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        binaries.executable()
+        browser()
+    }
     jvm()
     macosArm64()
     linuxArm64()
@@ -132,6 +137,9 @@ kotlin {
 
         jvmMain.dependencies {
             implementation("uk.co.electronstudio.jaylib:jaylib:6.0.+")
+        }
+
+        wasmJsMain.dependencies {
         }
     }
 }

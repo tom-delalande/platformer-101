@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platformer</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #000; }
+</style>
+</head>
+<body>
+<script>
+// ── Platform bridge: Canvas 2D + Web Audio + DOM events ──
+(function () {
+  "use strict"
+  let canvas = null, ctx = null
+  let nextTexId = 1, nextSndId = 1
+  var textures = {}, sounds = {}
+  var keyboardState = {}, mouseBtn = {}
+  var mouseX = 0, mouseY = 0
+
+  var keyMap = {87:"KeyW",65:"KeyA",83:"KeyS",68:"KeyD",69:"KeyE",76:"KeyL",80:"KeyP"}
+  var gBtn  = {4:12,5:13,6:14,7:15,8:16}
+  var mBtn  = {1:2}
+
+  globalThis.platform_initWindow = function (w,h,t) {
+    canvas = document.createElement("canvas")
+    canvas.width=w; canvas.height=h
+    canvas.style.display="block"; canvas.style.margin="0 auto"
+    document.body.style.margin="0"; document.body.style.overflow="hidden"
+    document.body.style.background="#000"
+    document.title=t; document.body.appendChild(canvas)
+    ctx = canvas.getContext("2d")
+    document.addEventListener("keydown",function(e){keyboardState[e.code]=true;if(e.code.startsWith("Key")||e.code==="Escape")e.preventDefault()})
+    document.addEventListener("keyup",function(e){keyboardState[e.code]=false})
+    canvas.addEventListener("mousedown",function(e){mouseBtn[e.button]=true})
+    canvas.addEventListener("mouseup",function(e){mouseBtn[e.button]=false})
+    canvas.addEventListener("mousemove",function(e){var r=canvas.getBoundingClientRect();mouseX=e.clientX-r.left;mouseY=e.clientY-r.top})
+  }
+
+  globalThis.platform_windowShouldClose = function(){return false}
+  globalThis.platform_closeWindow = function(){if(canvas&&canvas.parentNode)canvas.parentNode.removeChild(canvas)}
+  globalThis.platform_setWindowSize = function(w,h){if(!canvas)return;canvas.width=w;canvas.height=h;canvas.style.width=w+"px";canvas.style.height=h+"px"}
+  globalThis.platform_setWindowPosition = function(x,y){if(!canvas)return;canvas.style.position="absolute";canvas.style.left=x+"px";canvas.style.top=y+"px"}
+  globalThis.platform_setConfigFlags = function(){}
+  globalThis.platform_setTargetFPS = function(){}
+
+  globalThis.platform_beginDrawing = function(){ctx.save()}
+  globalThis.platform_endDrawing = function(){ctx.restore()}
+  globalThis.platform_clearBackground = function(r,g,b,a){ctx.fillStyle="rgba("+r+","+g+","+b+","+(a/255)+")";ctx.fillRect(0,0,canvas.width,canvas.height)}
+  globalThis.platform_drawRectangle = function(x,y,w,h,r,g,b,a){ctx.fillStyle="rgba("+r+","+g+","+b+","+(a/255)+")";ctx.fillRect(x,y,w,h)}
+  globalThis.platform_drawText = function(t,x,y,f,r,g,b,a){if(t==null)return;ctx.fillStyle="rgba("+r+","+g+","+b+","+(a/255)+")";ctx.font="bold "+f+"px monospace";ctx.textBaseline="top";ctx.fillText(t,x,y)}
+
+  globalThis.platform_drawTexturePro = function(id,sx,sy,sw,sh,dx,dy,dw,dh,ox,oy,rot,tr,tg,tb,ta){
+    var img=textures[id];if(!img||!img.complete)return
+    ctx.save();var fx=sw<0?-1:1
+    ctx.translate(dx+ox,dy+oy);ctx.rotate(rot);ctx.scale(fx,1)
+    if(ta<255)ctx.globalAlpha=(ctx.globalAlpha||1)*(ta/255)
+    ctx.drawImage(img,Math.abs(sx),Math.abs(sy),Math.abs(sw),Math.abs(sh),-ox,-oy,dw,dh)
+    ctx.restore()
+  }
+
+  globalThis.platform_loadTexture = function(p){var id=nextTexId++;var img=new Image();img.onload=function(){textures[id]=img};textures[id]=img;img.src=p;return id}
+  globalThis.platform_unloadTexture = function(id){delete textures[id]}
+
+  globalThis.platform_initAudio = function(){}
+  globalThis.platform_loadSound = function(p){var id=nextSndId++;var a=new Audio(p);a.preload="auto";sounds[id]=a;return id}
+  globalThis.platform_playSound = function(id){var a=sounds[id];if(!a)return;a.currentTime=0;a.play().catch(function(){})}
+  globalThis.platform_isSoundPlaying = function(id){var a=sounds[id];return a?!a.paused&&!a.ended:false}
+  globalThis.platform_unloadSound = function(id){delete sounds[id]}
+
+  globalThis.platform_isKeyDown = function(k){var c=keyMap[k];return c?!!keyboardState[c]:false}
+  globalThis.platform_isMouseButtonDown = function(b){var b2=mBtn[b]!==undefined?mBtn[b]:b;return!!mouseBtn[b2]}
+  globalThis.platform_getMouseX = function(){return mouseX|0}
+  globalThis.platform_getMouseY = function(){return mouseY|0}
+  globalThis.platform_isGamepadAvailable = function(g){var gp=navigator.getGamepads();return gp[g]!=null}
+  globalThis.platform_isGamepadButtonDown = function(g,b){var gp=navigator.getGamepads()[g];if(!gp)return false;var b2=gBtn[b]!==undefined?gBtn[b]:b;return gp.buttons[b2]?gp.buttons[b2].pressed:false}
+  globalThis.platform_getGamepadAxis = function(g,a){var gp=navigator.getGamepads()[g];if(!gp||!gp.axes[a])return 0;return gp.axes[a]}
+
+  globalThis.platform_getCurrentMonitor = function(){return 0}
+  globalThis.platform_getMonitorWidth = function(){return window.screen.width}
+  globalThis.platform_getMonitorHeight = function(){return window.screen.height}
+
+  globalThis.platform_readTextFile = function(p){
+    var c=localStorage.getItem("map_"+p);if(c!==null)return c
+    try{var x=new XMLHttpRequest();x.open("GET",p,false);x.overrideMimeType("text/plain");x.send();if(x.status===200||x.status===0)return x.responseText}catch(e){}
+    return null
+  }
+  globalThis.platform_writeTextFile = function(p,t){try{localStorage.setItem("map_"+p,t)}catch(e){}}
+
+  globalThis.platform_getenv = function(n){return new URLSearchParams(window.location.search).get(n)}
+})()
+</script>
+<script src="engine/build/dist/wasmJs/developmentExecutable/engine.js"></script>
+</body>
+</html>

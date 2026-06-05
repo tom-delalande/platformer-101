@@ -14,6 +14,35 @@ Collect all the Strawberries in each level and reach the flag to advance. Featur
 | Jump | W | A button |
 | Quit | Escape | - |
 
+## Run on Desktop (JVM)
+
+```sh
+./gradlew :engine:runJvm
+```
+
+## Run on Browser (Wasm)
+
+### Dev server (auto-reload)
+
+```sh
+./gradlew :engine:wasmJsBrowserDevelopmentRun
+```
+
+Open http://localhost:8080 in your browser.
+
+### Production build
+
+```sh
+./gradlew :engine:wasmJsBrowserProductionWebpack
+```
+
+Serve `engine/build/dist/wasmJs/productionExecutable/` with any HTTP server.
+
+### Query params
+
+- `?MODE=EDITOR` — launch in editor mode
+- `?MODE=EDITOR&MAP=1_2` — edit a specific map
+
 ## Attributions
 
 - SFX — [kronbits.itch.io/freesfx](https://kronbits.itch.io/freesfx)
