@@ -59,7 +59,7 @@ actual object Platform {
     actual fun initAudioDevice() = raylib.InitAudioDevice()
     actual fun initWindow(width: Int, height: Int, title: String?) = raylib.InitWindow(width, height, title)
     actual fun isGamepadAvailable(gamepad: Int) = raylib.IsGamepadAvailable(gamepad)
-    actual fun isGamepadButtonDown(button: Int) = raylib.IsMouseButtonDown(button)
+    actual fun isGamepadButtonDown(gamepad: Int, button: Int) = raylib.IsGamepadButtonDown(gamepad, button)
     actual fun isKeyDown(key: Int): Boolean = raylib.IsKeyDown(key)
     actual fun isMouseButtonDown(button: Int): Boolean = raylib.IsMouseButtonDown(button)
     actual fun isSoundPlaying(sound: Sound) = raylib.IsSoundPlaying(sound.sound as raylib.Sound)

@@ -9,6 +9,7 @@ data class Rectangle(val x: Float, val y: Float, val width: Float, val height: F
 
 @JvmInline
 value class Sound(val sound: Any)
+
 @JvmInline
 value class Texture(val texture: Any)
 
@@ -45,7 +46,7 @@ expect object Platform {
     fun initAudioDevice()
     fun initWindow(width: Int, height: Int, title: String?)
     fun isGamepadAvailable(gamepad: Int): Boolean
-    fun isGamepadButtonDown(button: Int): Boolean
+    fun isGamepadButtonDown(gamepad: Int, button: Int): Boolean
     fun isKeyDown(key: Int): Boolean
     fun isMouseButtonDown(button: Int): Boolean
     fun isSoundPlaying(sound: Sound): Boolean

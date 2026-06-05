@@ -1,6 +1,7 @@
 package game
 
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import platform.posix.SEEK_END
@@ -19,7 +20,7 @@ actual fun writeTextFile(path: String, text: String) {
     fclose(file)
 }
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, UnsafeNumber::class)
 actual fun readTextFile(path: String): String? {
     val file = fopen(path, "r") ?: return null
     fseek(file, 0, SEEK_END)

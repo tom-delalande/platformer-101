@@ -44,22 +44,38 @@ object Engine {
             if (Platform.isKeyDown(Platform.KEY_A)) add(Input.KeyboardA)
             if (Platform.isKeyDown(Platform.KEY_D)) add(Input.KeyboardD)
             if (Platform.isGamepadAvailable(0)) {
-                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_LEFT)) add(Input.SwitchControllerDPadLeft)
+                if (Platform.isGamepadButtonDown(
+                        0,
+                        Platform.GAMEPAD_BUTTON_LEFT_FACE_LEFT
+                    )
+                ) add(Input.SwitchControllerDPadLeft)
                 if (Platform.getGamepadAxisMovement(
                         0,
                         Platform.GAMEPAD_AXIS_LEFT_X
                     ) < -0.5f
                 ) add(Input.SwitchControllerLJoyStickLeft)
 
-                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) add(Input.SwitchControllerDPadRight)
+                if (Platform.isGamepadButtonDown(
+                        0,
+                        Platform.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
+                    )
+                ) add(Input.SwitchControllerDPadRight)
                 if (Platform.getGamepadAxisMovement(
                         0,
                         Platform.GAMEPAD_AXIS_LEFT_X
                     ) > 0.5f
                 ) add(Input.SwitchControllerLJoyStickRight)
 
-                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_UP)) add(Input.SwitchControllerDPadUp)
-                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_LEFT_FACE_DOWN)) add(Input.SwitchControllerDPadDown)
+                if (Platform.isGamepadButtonDown(
+                        0,
+                        Platform.GAMEPAD_BUTTON_LEFT_FACE_UP
+                    )
+                ) add(Input.SwitchControllerDPadUp)
+                if (Platform.isGamepadButtonDown(
+                        0,
+                        Platform.GAMEPAD_BUTTON_LEFT_FACE_DOWN
+                    )
+                ) add(Input.SwitchControllerDPadDown)
                 if (Platform.getGamepadAxisMovement(
                         0,
                         Platform.GAMEPAD_AXIS_LEFT_Y
@@ -70,10 +86,18 @@ object Engine {
                         Platform.GAMEPAD_AXIS_LEFT_Y
                     ) > 0.5f
                 ) add(Input.SwitchControllerLJoyStickDown)
-                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)) add(Input.SwitchControllerA)
-                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) add(Input.SwitchControllerB)
+                if (Platform.isGamepadButtonDown(
+                        0,
+                        Platform.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
+                    )
+                ) add(Input.SwitchControllerA)
+                if (Platform.isGamepadButtonDown(
+                        0,
+                        Platform.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
+                    )
+                ) add(Input.SwitchControllerB)
 
-                if (Platform.isGamepadButtonDown(Platform.GAMEPAD_BUTTON_MIDDLE)) {
+                if (Platform.isGamepadButtonDown(0, Platform.GAMEPAD_BUTTON_MIDDLE)) {
                     throw CloseGameException()
                 }
             }
