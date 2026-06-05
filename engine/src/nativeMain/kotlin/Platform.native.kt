@@ -6,8 +6,6 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cValue
 import kotlinx.cinterop.useContents
 import raylib.CloseWindow
-import raylib.LoadSound
-import raylib.Texture2D
 
 actual object Platform {
     actual val GAMEPAD_AXIS_LEFT_X: Int

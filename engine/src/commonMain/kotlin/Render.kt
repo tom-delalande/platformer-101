@@ -9,7 +9,7 @@ object Render {
         outputHeight: Int = sprite.height,
         tint: Color = Color(255, 255, 255),
         inputXOffset: Int = 0,
-        inputYOffset: Int = 0,
+        inputYOffset: Float = 0.0f,
         flipHorizontally: Boolean = false,
         currentFrame: Int = 0,
     ) {
@@ -17,7 +17,7 @@ object Render {
             texture = Assets.fromSprite(sprite),
             source = Rectangle(
                 x = (sprite.positionX.toFloat() + inputXOffset) + sprite.width * (currentFrame % sprite.numberOfFrames),
-                y = (sprite.positionY + inputYOffset).toFloat(),
+                y = (sprite.positionY + inputYOffset),
                 width = if (flipHorizontally) sprite.width.toFloat() * -1 else sprite.width.toFloat(),
                 height = sprite.height.toFloat(),
             ),

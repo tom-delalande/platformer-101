@@ -100,7 +100,7 @@ object GameState {
 
     var playerCurrentAnimationFrame: Int = 0
 
-    var backgroundOffsetY: Int = 0
+    var backgroundOffsetY: Float = 0.0f
 
     var cameraOffsetX: Int = 0
 

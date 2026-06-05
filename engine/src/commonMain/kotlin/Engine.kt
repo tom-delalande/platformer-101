@@ -15,13 +15,16 @@ object Engine {
     private val RAYWHITE = Color(245, 245, 245, 255)
 
     fun init() {
-        Platform.setConfigFlags(Platform.FLAG_WINDOW_UNDECORATED)
+        val windowed = getenv("WINDOWED") == "true"
+        if (!windowed) Platform.setConfigFlags(Platform.FLAG_WINDOW_UNDECORATED)
         Platform.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
         Platform.initAudioDevice()
         Platform.setTargetFPS(TARGET_FPS)
-        val display = Platform.getCurrentMonitor()
-        WINDOW_WIDTH = Platform.getMonitorWidth(display)
-        WINDOW_HEIGHT = Platform.getMonitorHeight(display)
+        if (!windowed) {
+            val display = Platform.getCurrentMonitor()
+            WINDOW_WIDTH = Platform.getMonitorWidth(display)
+            WINDOW_HEIGHT = Platform.getMonitorHeight(display)
+        }
         Platform.setWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
         Platform.setWindowPosition(0, 0)
 //        HideCursor()
@@ -97,6 +100,8 @@ object Engine {
             (0..WINDOW_HEIGHT.div(GameState.tileSize)).forEach { yOffset ->
                 Render.drawSprite(
                     sprite = Sprite.sprites["Background"]!!,
+                    outputWidth = GameState.tileSize,
+                    outputHeight = GameState.tileSize,
                     inputXOffset = GameState.cameraOffsetX,
                     inputYOffset = GameState.backgroundOffsetY,
                     outputPositionX = xOffset * GameState.tileSize.toFloat(),
