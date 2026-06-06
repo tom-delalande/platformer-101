@@ -241,16 +241,12 @@ object Engine {
                             Input.KeyboardA -> Sprite.sprites["Keyboard_A"]!!
                             Input.KeyboardD -> Sprite.sprites["Keyboard_D"]!!
                             Input.KeyboardS -> Sprite.sprites["Keyboard_S"]!!
+                            Input.SwitchControllerLJoyStickLeft -> Sprite.sprites[Input.SwitchControllerDPadLeft.name]!!
+                            Input.SwitchControllerLJoyStickRight -> Sprite.sprites[Input.SwitchControllerDPadRight.name]!!
                             Input.SwitchControllerDPadRight,
-                            Input.SwitchControllerDPadUp,
-                            Input.SwitchControllerDPadDown,
+                            Input.SwitchControllerDPadLeft,
                             Input.SwitchControllerA,
                             Input.SwitchControllerB,
-                            Input.SwitchControllerLJoyStickDown,
-                            Input.SwitchControllerLJoyStickUp,
-                            Input.SwitchControllerLJoyStickLeft,
-                            Input.SwitchControllerLJoyStickRight,
-                            Input.SwitchControllerDPadLeft,
                                 -> Sprite.sprites[key.name]!!
 
                             else -> null

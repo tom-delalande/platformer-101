@@ -74,6 +74,11 @@ object GameState {
             outputPositionXTile = 6,
             outputPositionYTile = 3,
         ),
+        UIElement(
+            entityType = EntityType.RockBox,
+            outputPositionXTile = 8,
+            outputPositionYTile = 3,
+        ),
     )
 
     var selectedUIElement: UIElement? = null
@@ -97,6 +102,10 @@ object GameState {
     var playerIsGrounded: Boolean = true
     var playerIsJumping: Boolean = false
     var playerDirection: Int = 1
+
+    var maxJumpVelocity = 37f / 64
+    var jumpSpeed = 12f / 64
+    var gravity = 6f / 64
 
     var playerCurrentAnimationFrame: Int = 0
 

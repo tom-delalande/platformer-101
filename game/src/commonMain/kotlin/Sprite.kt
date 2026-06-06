@@ -205,6 +205,12 @@ object Sprite {
                 width = 48,
                 height = 48,
             ),
+            "RockBox" to Sprite(
+                texture = "Assets/Pixel Adventure/Terrain/Terrain (16x16).png",
+                numberOfFrames = 1,
+                width = 48,
+                height = 48,
+            ),
             "Strawberry" to Sprite(
                 texture = "Assets/Pixel Adventure/Items/Fruits/Strawberry.png",
                 numberOfFrames = 17,

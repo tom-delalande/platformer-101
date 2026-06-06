@@ -10,6 +10,7 @@ if [[ "${1:-}" == "--skip-assets" ]]; then
 fi
 
 echo ":: Packaging for Batocera..."
+$SCRIPT_DIR/package-for-batocera.sh
 
 OUTPUT_DIR=$PROJECT_DIR/build/batocera
 BATOCERA_HOST=${BATOCERA_HOST:-root@BATOCERA.local}

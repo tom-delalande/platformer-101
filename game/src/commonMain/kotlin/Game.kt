@@ -1,5 +1,8 @@
 package game
 
+import game.GameState.gravity
+import game.GameState.jumpSpeed
+import game.GameState.maxJumpVelocity
 import game.GameState.maxXTile
 import game.GameState.minXTile
 import game.GameState.playSound
@@ -125,10 +128,12 @@ object Game {
                 if (Input.KeyboardD.isPressed() || Input.SwitchControllerDPadRight.isPressed() || Input.SwitchControllerLJoyStickRight.isPressed()) {
                     GameState.playerVelocityXInTiles = min(GameState.playerVelocityXInTiles + speed, maxVelocity)
                     playSound("Walk")
+                    GameState.playerDirection = 1
                 }
                 if (Input.KeyboardA.isPressed() || Input.SwitchControllerDPadLeft.isPressed() || Input.SwitchControllerLJoyStickLeft.isPressed()) {
                     GameState.playerVelocityXInTiles = max(GameState.playerVelocityXInTiles - speed, -maxVelocity)
                     playSound("Walk")
+                    GameState.playerDirection = -1
                 }
 
                 GameState.map.toList().map { mapEntity ->
@@ -159,9 +164,6 @@ object Game {
                     }
                 }
 
-                val maxJumpVelocity = 31f / 64
-                val jumpSpeed = 10f / 64
-                val gravity = 6f / 64
                 // AI-generated: added controller input support
                 if ((Input.KeyboardW.isPressed() || Input.SwitchControllerA.isPressed()) && GameState.playerIsJumping) {
                     GameState.playerVelocityYInTiles =
@@ -182,10 +184,8 @@ object Game {
                 processTerrainCollisions()
 
                 if (GameState.playerVelocityXInTiles > 0) {
-                    GameState.playerDirection = 1
                     GameState.playerVelocityXInTiles = max(GameState.playerVelocityXInTiles - friction, 0f)
                 } else if (GameState.playerVelocityXInTiles < 0) {
-                    GameState.playerDirection = -1
                     GameState.playerVelocityXInTiles = min(GameState.playerVelocityXInTiles + friction, 0f)
                 }
                 if (!GameState.playerIsGrounded) {
@@ -240,6 +240,7 @@ object Game {
         val terrainEntities = listOf(
             EntityType.Terrain,
             EntityType.WoodBox,
+            EntityType.RockBox,
             EntityType.GrassLeft,
             EntityType.GrassMiddle,
             EntityType.GrassRight,

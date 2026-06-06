@@ -29,6 +29,7 @@ enum class EntityType {
     RockHead,
     Finish,
     WoodBox,
+    RockBox,
     Strawberry,
     GrassLeft,
     GrassMiddle,
