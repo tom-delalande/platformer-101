@@ -99,6 +99,8 @@ actual object Platform {
 
     actual fun closeWindow() = raylib.CloseWindow()
 
+    actual fun getEnv(name: String) = System.getenv(name)
+
     fun raylib.Vector2.to() = Vector2(x(), y())
     fun Vector2.to() = (raylib.Vector2()).x(x).y(y)
     fun Color.to(): Raylib.Color = (Raylib.Color()).r(r.toByte()).g(g.toByte()).b(b.toByte()).a(a.toByte())

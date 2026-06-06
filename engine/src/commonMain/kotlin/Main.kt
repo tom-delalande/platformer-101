@@ -7,12 +7,12 @@ object Main {
     suspend fun run() {
         Engine.init()
         Sprite.init()
-        val sceneType = when (getenv("MODE")) {
+        val sceneType = when (Platform.getEnv("MODE")) {
             "EDITOR" -> SceneType.Editor
             else -> SceneType.Play
         }
 
-        val mapUrl = when (val map = getenv("MAP")) {
+        val mapUrl = when (val map = Platform.getEnv("MAP")) {
             is String -> "Assets/Maps/$map.json"
             else -> "Assets/Maps/1_1.json"
         }

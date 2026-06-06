@@ -4,7 +4,9 @@
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.cValue
+import kotlinx.cinterop.toKString
 import kotlinx.cinterop.useContents
+import platform.posix.getenv
 import raylib.CloseWindow
 
 actual object Platform {
@@ -102,6 +104,8 @@ actual object Platform {
     actual fun unloadSound(sound: Sound) = raylib.UnloadSound(sound.sound as CValue<raylib.Sound>)
 
     actual fun closeWindow() = CloseWindow()
+
+    actual fun getEnv(name: String): String? = getenv(name)?.toKString()
 }
 
 fun CValue<raylib.Vector2>.to() = this.useContents { Vector2(x, y) }

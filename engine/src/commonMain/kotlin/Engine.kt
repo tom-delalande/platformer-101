@@ -15,7 +15,7 @@ object Engine {
     private val RAYWHITE = Color(245, 245, 245, 255)
 
     fun init() {
-        val windowed = getenv("WINDOWED") == "true"
+        val windowed = Platform.getEnv("WINDOWED") == "true"
         if (!windowed) Platform.setConfigFlags(Platform.FLAG_WINDOW_UNDECORATED)
         Platform.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
         Platform.initAudioDevice()

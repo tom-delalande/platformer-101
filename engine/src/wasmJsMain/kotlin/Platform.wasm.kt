@@ -98,6 +98,9 @@ external fun platform_getMonitorWidth(m: Int): Int
 @JsFun("(m) => globalThis.platform_getMonitorHeight(m)")
 external fun platform_getMonitorHeight(m: Int): Int
 
+@JsFun("(n) => globalThis.platform_getenv(n)")
+external fun platform_getenv(n: String): String?
+
 // ── Platform implementation ─────────────────────────────
 actual object Platform {
     actual val FLAG_WINDOW_UNDECORATED: Int get() = 0
@@ -206,4 +209,6 @@ actual object Platform {
     actual fun getMonitorHeight(monitor: Int): Int = platform_getMonitorHeight(monitor)
 
     actual fun getMonitorWidth(monitor: Int): Int = platform_getMonitorWidth(monitor)
+
+    actual fun getEnv(name: String): String? = platform_getenv(name)
 }

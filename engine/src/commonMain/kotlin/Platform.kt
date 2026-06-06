@@ -70,4 +70,6 @@ expect object Platform {
     fun loadSound(name: String): Sound
     fun unloadSound(sound: Sound)
     fun closeWindow()
+
+    fun getEnv(name: String): String?
 }
