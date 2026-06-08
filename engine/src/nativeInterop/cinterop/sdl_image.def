@@ -1,0 +1,3 @@
+headers = SDL3_image/SDL_image.h
+headerFilter = SDL3_image/*
+package = sdl_image

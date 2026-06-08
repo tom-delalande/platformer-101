@@ -127,12 +127,13 @@ object Game {
 
                 if (Input.KeyboardD.isPressed() || Input.SwitchControllerDPadRight.isPressed() || Input.SwitchControllerLJoyStickRight.isPressed()) {
                     GameState.playerVelocityXInTiles = min(GameState.playerVelocityXInTiles + speed, maxVelocity)
-                    playSound("Walk")
+                    // TODO: figure out sound in SDL
+                    // playSound("Walk")
                     GameState.playerDirection = 1
                 }
                 if (Input.KeyboardA.isPressed() || Input.SwitchControllerDPadLeft.isPressed() || Input.SwitchControllerLJoyStickLeft.isPressed()) {
                     GameState.playerVelocityXInTiles = max(GameState.playerVelocityXInTiles - speed, -maxVelocity)
-                    playSound("Walk")
+                    // playSound("Walk")
                     GameState.playerDirection = -1
                 }
 

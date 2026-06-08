@@ -1,3 +1,0 @@
-headers = raylib.h
-package = raylib
-staticLibraries = libraylib.a

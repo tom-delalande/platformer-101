@@ -1,0 +1,3 @@
+headers = SDL3_ttf/SDL_ttf.h SDL3_ttf/SDL_textengine.h
+headerFilter = SDL3_ttf/*
+package = sdl_ttf

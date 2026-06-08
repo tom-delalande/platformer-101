@@ -1,127 +1,170 @@
+import cnames.structs.SDL_AudioStream
+import cnames.structs.SDL_Gamepad
+import cnames.structs.SDL_Renderer
+import cnames.structs.SDL_Window
 import game.Animation
 import game.GameState
 import game.Input
 import game.SceneType
 import game.Sprite
 import game.Static
+import kotlinx.cinterop.*
+import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.measureTime
-import kotlinx.coroutines.delay
+import sdl.*
 
+@OptIn(ExperimentalForeignApi::class)
 object Engine {
     var WINDOW_WIDTH: Int = 800
     var WINDOW_HEIGHT: Int = 600
     const val TARGET_FPS = 30
-    private val RAYWHITE = Color(245, 245, 245, 255)
+
+    lateinit var window: CPointer<SDL_Window>
+    lateinit var renderer: CPointer<SDL_Renderer>
+    lateinit var audioStream: CPointer<SDL_AudioStream>
+    lateinit var walkStream: CPointer<SDL_AudioStream>
+    var gamepad: CPointer<SDL_Gamepad>? = null
+    var gamepadId: UInt = 0u
+
+    var windowShouldClose = false
+
+    private val AUDIO_FORMAT = SDL_AUDIO_S16
+    private const val AUDIO_CHANNELS = 2
+    private const val AUDIO_FREQ = 44100
 
     fun init() {
-        val windowed = Platform.getEnv("WINDOWED") == "true"
-        if (!windowed) Platform.setConfigFlags(Platform.FLAG_WINDOW_UNDECORATED)
-        Platform.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
-        Platform.initAudioDevice()
-        Platform.setTargetFPS(TARGET_FPS)
-        if (!windowed) {
-            val display = Platform.getCurrentMonitor()
-            WINDOW_WIDTH = Platform.getMonitorWidth(display)
-            WINDOW_HEIGHT = Platform.getMonitorHeight(display)
+        SDL_Init(SDL_INIT_VIDEO)
+        SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "0")
+
+        val windowed = getEnv("WINDOWED") == "true"
+        val windowFlags = if (!windowed) {
+            SDL_WINDOW_FULLSCREEN
+        } else {
+            SDL_WINDOW_RESIZABLE
         }
-        Platform.setWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        Platform.setWindowPosition(0, 0)
-//        HideCursor()
+        window = SDL_CreateWindow("Platformer 101", WINDOW_WIDTH, WINDOW_HEIGHT, windowFlags)!!
+
+        println("INIT RENDERER")
+        renderer = SDL_CreateRenderer(window, null)!!
+
+        if (!windowed) {
+            memScoped {
+                val w = alloc<IntVar>()
+                val h = alloc<IntVar>()
+                SDL_GetWindowSize(window, w.ptr, h.ptr)
+                WINDOW_WIDTH = w.value
+                WINDOW_HEIGHT = h.value
+            }
+        }
+
+        SDL_InitSubSystem(SDL_INIT_AUDIO)
+        memScoped {
+            val spec = alloc<SDL_AudioSpec>().apply {
+                format = AUDIO_FORMAT
+                channels = AUDIO_CHANNELS
+                freq = AUDIO_FREQ
+            }
+            audioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, spec.ptr, null, null)!!
+            walkStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, spec.ptr, null, null)!!
+        }
+        SDL_ResumeAudioStreamDevice(audioStream)
+        SDL_ResumeAudioStreamDevice(walkStream)
+
+        SDL_InitSubSystem(SDL_INIT_GAMEPAD)
+        memScoped {
+            val count = alloc<IntVar>()
+            val gamepads = SDL_GetGamepads(count.ptr)
+            if (gamepads != null && count.value > 0) {
+                gamepadId = gamepads[0]
+                gamepad = SDL_OpenGamepad(gamepadId)
+                SDL_free(gamepads)
+            }
+        }
+    }
+
+    fun processEvents() {
+        memScoped {
+            val event = alloc<SDL_Event>()
+            while (SDL_PollEvent(event.ptr)) {
+                when (event.type) {
+                    SDL_EVENT_QUIT -> windowShouldClose = true
+                    SDL_EVENT_GAMEPAD_ADDED -> {
+                        if (gamepad == null) {
+                            val id = event.gdevice.which
+                            gamepad = SDL_OpenGamepad(id)
+                            gamepadId = id
+                        }
+                    }
+                    SDL_EVENT_GAMEPAD_REMOVED -> {
+                        val id = event.gdevice.which
+                        if (id == gamepadId) {
+                            gamepad = null
+                            gamepadId = 0u
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun update() {
         GameState.wasPressed = GameState.isPressed
 
         GameState.isPressed = buildList {
-            if (Platform.isMouseButtonDown(Platform.MOUSE_BUTTON_LEFT)) add(Input.Mouse1)
-            if (Platform.isMouseButtonDown(Platform.MOUSE_BUTTON_RIGHT)) add(Input.Mouse2)
-            if (Platform.isKeyDown(Platform.KEY_S)) add(Input.KeyboardS)
-            if (Platform.isKeyDown(Platform.KEY_L)) add(Input.KeyboardL)
-            if (Platform.isKeyDown(Platform.KEY_P)) add(Input.KeyboardP)
-            if (Platform.isKeyDown(Platform.KEY_E)) add(Input.KeyboardE)
-            if (Platform.isKeyDown(Platform.KEY_W)) add(Input.KeyboardW)
-            if (Platform.isKeyDown(Platform.KEY_A)) add(Input.KeyboardA)
-            if (Platform.isKeyDown(Platform.KEY_D)) add(Input.KeyboardD)
-            if (Platform.isGamepadAvailable(0)) {
-                if (Platform.isGamepadButtonDown(
-                        0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_LEFT
-                    )
-                ) add(Input.SwitchControllerDPadLeft)
-                if (Platform.getGamepadAxisMovement(
-                        0,
-                        Platform.GAMEPAD_AXIS_LEFT_X
-                    ) < -0.5f
-                ) add(Input.SwitchControllerLJoyStickLeft)
+            memScoped {
+                val mouseX = alloc<FloatVar>()
+                val mouseY = alloc<FloatVar>()
+                val mouseButtons = SDL_GetMouseState(mouseX.ptr, mouseY.ptr)
+                if ((mouseButtons and SDL_BUTTON_LMASK) != 0u) add(Input.Mouse1)
+                if ((mouseButtons and SDL_BUTTON_RMASK) != 0u) add(Input.Mouse2)
+                GameState.mousePositionX = mouseX.value.toInt()
+                GameState.mousePositionY = mouseY.value.toInt()
+            }
 
-                if (Platform.isGamepadButtonDown(
-                        0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
-                    )
-                ) add(Input.SwitchControllerDPadRight)
-                if (Platform.getGamepadAxisMovement(
-                        0,
-                        Platform.GAMEPAD_AXIS_LEFT_X
-                    ) > 0.5f
-                ) add(Input.SwitchControllerLJoyStickRight)
+            val keys = SDL_GetKeyboardState(null) ?: return@buildList
+            if (keys[SDL_SCANCODE_S.toInt()].value) add(Input.KeyboardS)
+            if (keys[SDL_SCANCODE_L.toInt()].value) add(Input.KeyboardL)
+            if (keys[SDL_SCANCODE_P.toInt()].value) add(Input.KeyboardP)
+            if (keys[SDL_SCANCODE_E.toInt()].value) add(Input.KeyboardE)
+            if (keys[SDL_SCANCODE_W.toInt()].value) add(Input.KeyboardW)
+            if (keys[SDL_SCANCODE_A.toInt()].value) add(Input.KeyboardA)
+            if (keys[SDL_SCANCODE_D.toInt()].value) add(Input.KeyboardD)
 
-                if (Platform.isGamepadButtonDown(
-                        0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_UP
-                    )
-                ) add(Input.SwitchControllerDPadUp)
-                if (Platform.isGamepadButtonDown(
-                        0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_DOWN
-                    )
-                ) add(Input.SwitchControllerDPadDown)
-                if (Platform.getGamepadAxisMovement(
-                        0,
-                        Platform.GAMEPAD_AXIS_LEFT_Y
-                    ) < -0.5f
-                ) add(Input.SwitchControllerLJoyStickUp)
-                if (Platform.getGamepadAxisMovement(
-                        0,
-                        Platform.GAMEPAD_AXIS_LEFT_Y
-                    ) > 0.5f
-                ) add(Input.SwitchControllerLJoyStickDown)
-                if (Platform.isGamepadButtonDown(
-                        0,
-                        Platform.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
-                    )
-                ) add(Input.SwitchControllerA)
-                if (Platform.isGamepadButtonDown(
-                        0,
-                        Platform.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
-                    )
-                ) add(Input.SwitchControllerB)
-
-                if (Platform.isGamepadButtonDown(0, Platform.GAMEPAD_BUTTON_MIDDLE)) {
+            val pad = gamepad
+            if (pad != null && SDL_GamepadConnected(pad)) {
+                if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_LEFT)) add(Input.SwitchControllerDPadLeft)
+                if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX) < 15000) add(Input.SwitchControllerLJoyStickLeft)
+                if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) add(Input.SwitchControllerDPadRight)
+                if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX) > 15000) add(Input.SwitchControllerLJoyStickRight)
+                if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_UP)) add(Input.SwitchControllerDPadUp)
+                if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_DOWN)) add(Input.SwitchControllerDPadDown)
+                if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY) < -15000) add(Input.SwitchControllerLJoyStickUp)
+                if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTY) > 15000) add(Input.SwitchControllerLJoyStickDown)
+                if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_EAST)) add(Input.SwitchControllerA)
+                if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_SOUTH)) add(Input.SwitchControllerB)
+                if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_MISC1)) {
                     throw CloseGameException()
                 }
             }
         }
-
-        val mousePosition = Platform.getMousePosition()
-        GameState.mousePositionX = mousePosition.x.toInt()
-        GameState.mousePositionY = mousePosition.y.toInt()
     }
 
     fun render() {
-        Platform.beginDrawing()
-        Platform.clearBackground(RAYWHITE)
+        SDL_SetRenderDrawColor(renderer, 245.toUByte(), 245.toUByte(), 245.toUByte(), 255.toUByte())
+        SDL_RenderClear(renderer)
+
         GameState.sounds.forEach {
-            val sound = Assets.fromClip(it)
-            if (!Platform.isSoundPlaying(sound)) {
-                Platform.playSound(sound)
+            val s = Assets.fromClip(it)
+            if (s.audioBuf != null) {
+                SDL_ClearAudioStream(audioStream)
+                SDL_PutAudioStreamData(audioStream, s.audioBuf, s.audioLen.toInt())
             }
         }
         GameState.sounds.clear()
 
-        // Render Background
-        (0..WINDOW_WIDTH.div(GameState.tileSize)).forEach { xOffset ->
-            (0..WINDOW_HEIGHT.div(GameState.tileSize)).forEach { yOffset ->
+        (-1..WINDOW_WIDTH.div(GameState.tileSize) + 2).forEach { xOffset ->
+            (-1..WINDOW_HEIGHT.div(GameState.tileSize) + 2).forEach { yOffset ->
                 Render.drawSprite(
                     sprite = Sprite.sprites["Background"]!!,
                     outputWidth = GameState.tileSize,
@@ -137,16 +180,21 @@ object Engine {
         val totalOffsetX = GameState.cameraOffsetX + GameState.playSpaceOffsetX
         val validPlaySpaceOffsetY = -(GameState.SIZE_Y_IN_TILES * GameState.tileSize / 2)
         val yOrigin = WINDOW_HEIGHT / 2 - validPlaySpaceOffsetY
+
         when (GameState.sceneType) {
             SceneType.Editor -> {
-                Platform.drawRectangle(
-                    -totalOffsetX,
-                    WINDOW_HEIGHT / 2 + validPlaySpaceOffsetY,
-                    WINDOW_WIDTH + totalOffsetX,
-                    GameState.SIZE_Y_IN_TILES * GameState.tileSize,
-                    Color(50, 50, 50, 122)
-                )
-                Platform.drawText(GameState.currentMap, 64, 64, 24, Color(0, 0, 0))
+                memScoped {
+                    val rect = alloc<SDL_FRect>().apply {
+                        x = (-totalOffsetX).toFloat()
+                        y = (WINDOW_HEIGHT / 2 + validPlaySpaceOffsetY).toFloat()
+                        w = (WINDOW_WIDTH + totalOffsetX).toFloat()
+                        h = (GameState.SIZE_Y_IN_TILES * GameState.tileSize).toFloat()
+                    }
+                    SDL_SetRenderDrawColor(renderer, 50.toUByte(), 50.toUByte(), 50.toUByte(), 122.toUByte())
+                    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)
+                    SDL_RenderFillRect(renderer, rect.ptr)
+                }
+
                 GameState.renderables.forEach {
                     Render.drawSprite(
                         sprite = it.currentSprite,
@@ -154,7 +202,6 @@ object Engine {
                         outputPositionY = yOrigin - GameState.tileSize - (it.mapEntity.gridPositionY * GameState.tileSize.toFloat()),
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
-                        // This is the only difference to above, could probably be simplified with better classes
                         currentFrame = 0,
                     )
                 }
@@ -166,7 +213,6 @@ object Engine {
                         outputPositionY = GameState.mousePositionY - 32f,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
-                        tint = Color(255, 255, 255, 150),
                     )
                 }
 
@@ -199,11 +245,11 @@ object Engine {
                             outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - it.mapEntity.gridPositionY * GameState.tileSize.toFloat() + GameState.playSpaceOffsetY,
                             outputWidth = GameState.tileSize,
                             outputHeight = GameState.tileSize,
-                            // This is the only difference to above, could probably be simplified with better classes
                             currentFrame = 0,
                         )
                     }
                 }
+
                 if (GameState.playerEntity != null) {
                     val sprite = when {
                         GameState.playerVelocityYInTiles > 0 -> Sprite.sprites["Player_Jump"]
@@ -219,19 +265,16 @@ object Engine {
                         outputPositionY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY,
                         outputWidth = GameState.tileSize,
                         outputHeight = GameState.tileSize,
-                        currentFrame = GameState.playerCurrentAnimationFrame
+                        currentFrame = GameState.playerCurrentAnimationFrame,
                     )
 
                     val pressedKeys = GameState.isPressed
                     val keyIconSize = GameState.tileSize
                     val gapBetweenKeys = 0
-                    val totalWidth =
-                        pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
-
+                    val totalWidth = pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
 
                     val playerWorldX = GameState.playerWorldX
-                    val playerWorldY =
-                        (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY
+                    val playerWorldY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY
                     val startX = playerWorldX + (GameState.tileSize - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->
@@ -264,13 +307,10 @@ object Engine {
                 } else {
                     println("WARN: no player entity set in map")
                 }
-
             }
         }
 
-        // DrawText("Offset X: ${GameState.playSpaceOffsetX}", 64, 64, 24, color(0, 0, 0))
-
-        Platform.endDrawing()
+        SDL_RenderPresent(renderer)
     }
 
     suspend fun executeWithFixedFrameRate(block: () -> Unit) {
@@ -282,5 +322,5 @@ object Engine {
         }
     }
 
-    class CloseGameException : Exception()
+    class CloseGameException() : Exception()
 }
