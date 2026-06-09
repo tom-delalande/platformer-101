@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 PROJECT_DIR=$(cd $SCRIPT_DIR/.. && pwd)
 
-echo ":: Building raylib library for Linux ARM64..."
+echo ":: Building SDL library for Linux ARM64..."
 
 TMP_DIR=$(mktemp -d)
 trap "rm -rf $TMP_DIR" EXIT

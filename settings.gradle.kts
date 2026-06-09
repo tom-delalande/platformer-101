@@ -6,8 +6,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "platformer-kotlin-raylib"
+rootProject.name = "strawberry-platformer"
 
-//includeBuild("../raylib-kotlin-multiplatform")
 include(":engine")
 include(":game")
