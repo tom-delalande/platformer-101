@@ -58,14 +58,23 @@ kotlin {
                 runTaskProvider?.configure {
                     workingDir = rootProject.layout.projectDirectory.asFile
                 }
-                linkerOpts(
-                    if (target.name == "macosArm64") "-L/opt/homebrew/lib" else "-L${project.rootDir}/native/${target.name}/lib",
-                    "-Wl,--allow-shlib-undefined",
-                    "-Wl,--as-needed",
-                    "-lSDL3",
-                    "-lSDL3_image",
-                    "-lSDL3_ttf",
-                )
+                if (target.name == "macosArm64") {
+                    linkerOpts(
+                        "-L/opt/homebrew/lib",
+                        "-lSDL3",
+                        "-lSDL3_image",
+                        "-lSDL3_ttf",
+                    )
+                } else {
+                    linkerOpts(
+                        "-L${project.rootDir}/native/${target.name}/lib",
+                        "-Wl,--allow-shlib-undefined",
+                        "-Wl,--as-needed",
+                        "-lSDL3",
+                        "-lSDL3_image",
+                        "-lSDL3_ttf",
+                    )
+                }
             }
         }
     }

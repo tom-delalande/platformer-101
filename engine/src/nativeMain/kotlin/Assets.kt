@@ -15,7 +15,6 @@ object Assets {
     private val cachedTextures = mutableMapOf<String, CPointer<sdl.SDL_Texture>>()
 
     val textures by lazy {
-        println("RESOLVING TEXTURES")
         Sprite.sprites.map { (_, sprite) ->
             sprite to cachedTextures.getOrPut(sprite.texture) {
                 val texture = IMG_LoadTexture(Engine.renderer, sprite.texture)!!

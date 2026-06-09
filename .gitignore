@@ -9,7 +9,6 @@ build/batocera/
 build/docker/
 native/raylib/raylib-6.0_linux_arm64/lib
 native/linuxArm64/lib-backuo
-native/include
 
 # Native per-platform libraries
 native/linuxArm64

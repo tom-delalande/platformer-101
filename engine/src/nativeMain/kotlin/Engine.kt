@@ -43,20 +43,18 @@ object Engine {
         } else {
             SDL_WINDOW_RESIZABLE
         }
-        window = SDL_CreateWindow("Platformer 101", WINDOW_WIDTH, WINDOW_HEIGHT, windowFlags)!!
-
-        println("INIT RENDERER")
-        renderer = SDL_CreateRenderer(window, null)!!
-
         if (!windowed) {
             memScoped {
-                val w = alloc<IntVar>()
-                val h = alloc<IntVar>()
-                SDL_GetWindowSize(window, w.ptr, h.ptr)
-                WINDOW_WIDTH = w.value
-                WINDOW_HEIGHT = h.value
+                val displayId = SDL_GetPrimaryDisplay();
+                val displayMode = SDL_GetCurrentDisplayMode(displayId)
+                WINDOW_WIDTH = displayMode!!.pointed.w
+                WINDOW_HEIGHT = displayMode.pointed.h
             }
         }
+
+        window = SDL_CreateWindow("Platformer 101", WINDOW_WIDTH, WINDOW_HEIGHT, windowFlags)!!
+
+        renderer = SDL_CreateRenderer(window, null)!!
 
         SDL_InitSubSystem(SDL_INIT_AUDIO)
         memScoped {
@@ -96,6 +94,7 @@ object Engine {
                             gamepadId = id
                         }
                     }
+
                     SDL_EVENT_GAMEPAD_REMOVED -> {
                         val id = event.gdevice.which
                         if (id == gamepadId) {
@@ -134,7 +133,7 @@ object Engine {
             val pad = gamepad
             if (pad != null && SDL_GamepadConnected(pad)) {
                 if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_LEFT)) add(Input.SwitchControllerDPadLeft)
-                if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX) < 15000) add(Input.SwitchControllerLJoyStickLeft)
+                if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX) < -15000) add(Input.SwitchControllerLJoyStickLeft)
                 if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT)) add(Input.SwitchControllerDPadRight)
                 if (SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFTX) > 15000) add(Input.SwitchControllerLJoyStickRight)
                 if (SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_DPAD_UP)) add(Input.SwitchControllerDPadUp)
@@ -271,10 +270,12 @@ object Engine {
                     val pressedKeys = GameState.isPressed
                     val keyIconSize = GameState.tileSize
                     val gapBetweenKeys = 0
-                    val totalWidth = pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
+                    val totalWidth =
+                        pressedKeys.size * keyIconSize + (pressedKeys.size - 1).coerceAtLeast(0) * gapBetweenKeys
 
                     val playerWorldX = GameState.playerWorldX
-                    val playerWorldY = (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY
+                    val playerWorldY =
+                        (WINDOW_HEIGHT / GameState.tileSize) * GameState.tileSize - GameState.playerWorldY + GameState.playSpaceOffsetY
                     val startX = playerWorldX + (GameState.tileSize - totalWidth) / 2f
 
                     pressedKeys.forEachIndexed { index, key ->
