@@ -38,6 +38,8 @@ kotlin {
         linuxX64(),
         linuxArm64(),
         macosArm64(),
+        iosArm64(),
+        iosSimulatorArm64(),
     ).forEach { target ->
         target.compilations.getByName("main") {
             cinterops {
@@ -58,15 +60,58 @@ kotlin {
                 runTaskProvider?.configure {
                     workingDir = rootProject.layout.projectDirectory.asFile
                 }
-                if (target.name == "macosArm64") {
-                    linkerOpts(
+                when (target.name) {
+                    "macosArm64" -> linkerOpts(
                         "-L/opt/homebrew/lib",
                         "-lSDL3",
                         "-lSDL3_image",
                         "-lSDL3_ttf",
                     )
-                } else {
-                    linkerOpts(
+                    "iosArm64" -> linkerOpts(
+                        "-L${project.rootDir}/native/iosArm64/lib",
+                        "-lSDL3",
+                        "-lSDL3_image",
+                        "-lSDL3_ttf",
+                        "-lc++",
+                        "-framework", "UIKit",
+                        "-framework", "AVFoundation",
+                        "-framework", "CoreGraphics",
+                        "-framework", "CoreMotion",
+                        "-framework", "Foundation",
+                        "-framework", "GameController",
+                        "-framework", "Metal",
+                        "-framework", "QuartzCore",
+                        "-framework", "AudioToolbox",
+                        "-framework", "CoreMedia",
+                        "-framework", "CoreVideo",
+                        "-framework", "CoreAudio",
+                        "-framework", "CoreBluetooth",
+                        "-framework", "OpenGLES",
+                        "-weak_framework", "CoreHaptics",
+                    )
+                    "iosSimulatorArm64" -> linkerOpts(
+                        "-L${project.rootDir}/native/iosSimulatorArm64/lib",
+                        "-lSDL3",
+                        "-lSDL3_image",
+                        "-lSDL3_ttf",
+                        "-lc++",
+                        "-framework", "UIKit",
+                        "-framework", "AVFoundation",
+                        "-framework", "CoreGraphics",
+                        "-framework", "CoreMotion",
+                        "-framework", "Foundation",
+                        "-framework", "GameController",
+                        "-framework", "Metal",
+                        "-framework", "QuartzCore",
+                        "-framework", "AudioToolbox",
+                        "-framework", "CoreMedia",
+                        "-framework", "CoreVideo",
+                        "-framework", "CoreAudio",
+                        "-framework", "CoreBluetooth",
+                        "-framework", "OpenGLES",
+                        "-weak_framework", "CoreHaptics",
+                    )
+                    else -> linkerOpts(
                         "-L${project.rootDir}/native/${target.name}/lib",
                         "-Wl,--allow-shlib-undefined",
                         "-Wl,--as-needed",

@@ -34,6 +34,7 @@ object Engine {
     private const val AUDIO_FREQ = 44100
 
     fun init() {
+        SDL_SetMainReady()
         SDL_Init(SDL_INIT_VIDEO)
         SDL_SetHint("SDL_HINT_RENDER_SCALE_QUALITY", "0")
 

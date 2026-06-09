@@ -1,6 +1,6 @@
 # Strawberry Platformer
 
-A 2D platformer built with Kotlin and Raylib to help people new to gaming learn the ropes.
+A 2D platformer built with Kotlin and SDL3 to help people new to gaming learn the ropes.
 
 Collect all the Strawberries in each level and reach the flag to advance. Features 9 levels and support for keyboard and controller input.
 
@@ -14,11 +14,20 @@ Collect all the Strawberries in each level and reach the flag to advance. Featur
 | Jump | W | A button |
 | Quit | Escape | - |
 
-## Run on Desktop (JVM)
+## Run on iOS (Simulator)
+
+Requires Xcode.
 
 ```sh
-./gradlew :engine:runJvm
+# Build SDL3 and link the game
+./scripts/package-ios.sh
+
+# Install & launch on simulator
+xcrun simctl install booted build/iosApp/Platformer101.app
+xcrun simctl launch booted com.platformer-101.app
 ```
+
+Avoid using `./scripts/package-ios.sh` with the `release` config until you've tested with `debug` first. The debug build uses the default config.
 
 ## Run on Browser (Wasm)
 
