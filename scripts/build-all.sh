@@ -23,7 +23,7 @@ if [[ "$BUILD_RAYLIB" == "true" ]]; then
 
     # linuxArm64
     echo "--- linuxArm64: Building raylib ---"
-    if $SCRIPT_DIR/build-raylib-linuxArm64.sh; then
+    if $SCRIPT_DIR/build-sdl-linuxArm64.sh; then
         SUCCESSES+=("raylib-linuxArm64")
     else
         FAILURES+=("raylib-linuxArm64")

@@ -59,7 +59,9 @@ kotlin {
                     workingDir = rootProject.layout.projectDirectory.asFile
                 }
                 linkerOpts(
-                    "-L/opt/homebrew/lib",
+                    if (target.name == "macosArm64") "-L/opt/homebrew/lib" else "-L${project.rootDir}/native/${target.name}/lib",
+                    "-Wl,--allow-shlib-undefined",
+                    "-Wl,--as-needed",
                     "-lSDL3",
                     "-lSDL3_image",
                     "-lSDL3_ttf",
