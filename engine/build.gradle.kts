@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
@@ -9,17 +13,7 @@ repositories {
 
 kotlin {
     jvmToolchain(21)
-    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
-    wasmJs {
-        binaries.executable()
-        browser()
-    }
     jvm()
-    macosArm64()
-    linuxArm64()
-    linuxX64()
-    mingwX64()
-
     macosArm64 {
         compilations.getByName("main") {
             cinterops {
@@ -47,9 +41,8 @@ kotlin {
             }
         }
     }
-
     linuxArm64 {
-        val libs = "${project.rootDir}/native/linuxArm64/lib"
+        val libs = "${project.rootDir}/native/${name}/lib"
         compilations["main"].cinterops {
             create("raylib") {
                 defFile("src/nativeInterop/cinterop/raylibLinux.def")
@@ -70,77 +63,34 @@ kotlin {
                     "-lpthread",
                     "-ldl",
                     "-latomic"
-                )
-            }
-        }
-    }
-
-    linuxX64 {
-        val libs = "${project.rootDir}/native/linuxX64/lib"
-        compilations["main"].cinterops {
-            create("raylib") {
-                defFile("src/nativeInterop/cinterop/raylibLinux.def")
-                packageName("raylib")
-                compilerOpts("-I${project.rootDir}/native/include")
-                extraOpts("-libraryPath", libs)
-            }
-        }
-        binaries {
-            executable {
-                entryPoint = "main"
-                linkerOpts(
-                    "-L$libs",
-                    "-Wl,--allow-shlib-undefined",
-                    "-lSDL2",
-                    "-Wl,--as-needed",
-                    "-lm",
-                    "-lpthread",
-                    "-ldl",
-                    "-latomic"
-                )
-            }
-        }
-    }
-
-    mingwX64 {
-        val libs = "${project.rootDir}/native/mingwX64/lib"
-        compilations["main"].cinterops {
-            create("raylib") {
-                defFile("src/nativeInterop/cinterop/raylibWin.def")
-                packageName("raylib")
-                compilerOpts("-I${project.rootDir}/native/include")
-                extraOpts("-libraryPath", libs)
-            }
-        }
-        binaries {
-            executable {
-                entryPoint = "main"
-                linkerOpts(
-                    "-L$libs",
-                    "-lraylib",
-                    "-lSDL2",
-                    "-lwinmm",
-                    "-lgdi32",
-                    "-lopengl32",
-                    "-static"
                 )
             }
         }
     }
 
     sourceSets {
-        commonMain.dependencies {
-            implementation(project(":game"))
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+        commonMain {
+            dependencies {
+                implementation(project(":game"))
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+                implementation("io.github.tom-delalande:raylib-kotlin-multiplatform:+")
+            }
         }
 
-        jvmMain.dependencies {
-            implementation("uk.co.electronstudio.jaylib:jaylib:6.0.+")
+        val jvmMain by getting {
+            dependsOn(commonMain.get())
         }
 
-        wasmJsMain.dependencies {
+        val nativeMain by creating {
+            dependsOn(commonMain.get())
         }
+
+        val macosArm64Main by getting
+        val linuxArm64Main by getting
+
+        macosArm64Main.dependsOn(nativeMain)
+        linuxArm64Main.dependsOn(nativeMain)
     }
 }
 

@@ -1,3 +1,11 @@
+import com.raylib.kmp.Color
+import com.raylib.kmp.ConfigFlags
+import com.raylib.kmp.GamepadAxis
+import com.raylib.kmp.GamepadButton
+import com.raylib.kmp.KeyboardKey
+import com.raylib.kmp.MouseButton
+import com.raylib.kmp.Ray
+import com.raylib.kmp.Raylib
 import game.Animation
 import game.GameState
 import game.Input
@@ -16,17 +24,17 @@ object Engine {
 
     fun init() {
         val windowed = Platform.getEnv("WINDOWED") == "true"
-        if (!windowed) Platform.setConfigFlags(Platform.FLAG_WINDOW_UNDECORATED)
-        Platform.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
-        Platform.initAudioDevice()
-        Platform.setTargetFPS(TARGET_FPS)
+        if (!windowed) Raylib.setConfigFlags(ConfigFlags.FLAG_WINDOW_UNDECORATED.toUInt())
+        Raylib.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
+        Raylib.initAudioDevice()
+        Raylib.setTargetFPS(TARGET_FPS)
         if (!windowed) {
-            val display = Platform.getCurrentMonitor()
-            WINDOW_WIDTH = Platform.getMonitorWidth(display)
-            WINDOW_HEIGHT = Platform.getMonitorHeight(display)
+            val display = Raylib.getCurrentMonitor()
+            WINDOW_WIDTH = Raylib.getMonitorWidth(display)
+            WINDOW_HEIGHT = Raylib.getMonitorHeight(display)
         }
-        Platform.setWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
-        Platform.setWindowPosition(0, 0)
+        Raylib.setWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
+        Raylib.setWindowPosition(0, 0)
 //        HideCursor()
     }
 
@@ -34,87 +42,87 @@ object Engine {
         GameState.wasPressed = GameState.isPressed
 
         GameState.isPressed = buildList {
-            if (Platform.isMouseButtonDown(Platform.MOUSE_BUTTON_LEFT)) add(Input.Mouse1)
-            if (Platform.isMouseButtonDown(Platform.MOUSE_BUTTON_RIGHT)) add(Input.Mouse2)
-            if (Platform.isKeyDown(Platform.KEY_S)) add(Input.KeyboardS)
-            if (Platform.isKeyDown(Platform.KEY_L)) add(Input.KeyboardL)
-            if (Platform.isKeyDown(Platform.KEY_P)) add(Input.KeyboardP)
-            if (Platform.isKeyDown(Platform.KEY_E)) add(Input.KeyboardE)
-            if (Platform.isKeyDown(Platform.KEY_W)) add(Input.KeyboardW)
-            if (Platform.isKeyDown(Platform.KEY_A)) add(Input.KeyboardA)
-            if (Platform.isKeyDown(Platform.KEY_D)) add(Input.KeyboardD)
-            if (Platform.isGamepadAvailable(0)) {
-                if (Platform.isGamepadButtonDown(
+            if (Raylib.isMouseButtonDown(MouseButton.MOUSE_BUTTON_LEFT)) add(Input.Mouse1)
+            if (Raylib.isMouseButtonDown(MouseButton.MOUSE_BUTTON_RIGHT)) add(Input.Mouse2)
+            if (Raylib.isKeyDown(KeyboardKey.KEY_S)) add(Input.KeyboardS)
+            if (Raylib.isKeyDown(KeyboardKey.KEY_L)) add(Input.KeyboardL)
+            if (Raylib.isKeyDown(KeyboardKey.KEY_P)) add(Input.KeyboardP)
+            if (Raylib.isKeyDown(KeyboardKey.KEY_E)) add(Input.KeyboardE)
+            if (Raylib.isKeyDown(KeyboardKey.KEY_W)) add(Input.KeyboardW)
+            if (Raylib.isKeyDown(KeyboardKey.KEY_A)) add(Input.KeyboardA)
+            if (Raylib.isKeyDown(KeyboardKey.KEY_D)) add(Input.KeyboardD)
+            if (Raylib.isGamepadAvailable(0)) {
+                if (Raylib.isGamepadButtonDown(
                         0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_LEFT
+                        GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_LEFT
                     )
                 ) add(Input.SwitchControllerDPadLeft)
-                if (Platform.getGamepadAxisMovement(
+                if (Raylib.getGamepadAxisMovement(
                         0,
-                        Platform.GAMEPAD_AXIS_LEFT_X
+                        GamepadAxis.GAMEPAD_AXIS_LEFT_X
                     ) < -0.5f
                 ) add(Input.SwitchControllerLJoyStickLeft)
 
-                if (Platform.isGamepadButtonDown(
+                if (Raylib.isGamepadButtonDown(
                         0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
+                        GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
                     )
                 ) add(Input.SwitchControllerDPadRight)
-                if (Platform.getGamepadAxisMovement(
+                if (Raylib.getGamepadAxisMovement(
                         0,
-                        Platform.GAMEPAD_AXIS_LEFT_X
+                        GamepadAxis.GAMEPAD_AXIS_LEFT_X
                     ) > 0.5f
                 ) add(Input.SwitchControllerLJoyStickRight)
 
-                if (Platform.isGamepadButtonDown(
+                if (Raylib.isGamepadButtonDown(
                         0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_UP
+                        GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP
                     )
                 ) add(Input.SwitchControllerDPadUp)
-                if (Platform.isGamepadButtonDown(
+                if (Raylib.isGamepadButtonDown(
                         0,
-                        Platform.GAMEPAD_BUTTON_LEFT_FACE_DOWN
+                        GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN
                     )
                 ) add(Input.SwitchControllerDPadDown)
-                if (Platform.getGamepadAxisMovement(
+                if (Raylib.getGamepadAxisMovement(
                         0,
-                        Platform.GAMEPAD_AXIS_LEFT_Y
+                        GamepadAxis.GAMEPAD_AXIS_LEFT_Y
                     ) < -0.5f
                 ) add(Input.SwitchControllerLJoyStickUp)
-                if (Platform.getGamepadAxisMovement(
+                if (Raylib.getGamepadAxisMovement(
                         0,
-                        Platform.GAMEPAD_AXIS_LEFT_Y
+                        GamepadAxis.GAMEPAD_AXIS_LEFT_Y
                     ) > 0.5f
                 ) add(Input.SwitchControllerLJoyStickDown)
-                if (Platform.isGamepadButtonDown(
+                if (Raylib.isGamepadButtonDown(
                         0,
-                        Platform.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
+                        GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
                     )
                 ) add(Input.SwitchControllerA)
-                if (Platform.isGamepadButtonDown(
+                if (Raylib.isGamepadButtonDown(
                         0,
-                        Platform.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
+                        GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
                     )
                 ) add(Input.SwitchControllerB)
 
-                if (Platform.isGamepadButtonDown(0, Platform.GAMEPAD_BUTTON_MIDDLE)) {
+                if (Raylib.isGamepadButtonDown(0, GamepadButton.GAMEPAD_BUTTON_MIDDLE)) {
                     throw CloseGameException()
                 }
             }
         }
 
-        val mousePosition = Platform.getMousePosition()
+        val mousePosition = Raylib.getMousePosition()
         GameState.mousePositionX = mousePosition.x.toInt()
         GameState.mousePositionY = mousePosition.y.toInt()
     }
 
     fun render() {
-        Platform.beginDrawing()
-        Platform.clearBackground(RAYWHITE)
+        Raylib.beginDrawing()
+        Raylib.clearBackground(RAYWHITE)
         GameState.sounds.forEach {
             val sound = Assets.fromClip(it)
-            if (!Platform.isSoundPlaying(sound)) {
-                Platform.playSound(sound)
+            if (!Raylib.isSoundPlaying(sound)) {
+                Raylib.playSound(sound)
             }
         }
         GameState.sounds.clear()
@@ -139,14 +147,14 @@ object Engine {
         val yOrigin = WINDOW_HEIGHT / 2 - validPlaySpaceOffsetY
         when (GameState.sceneType) {
             SceneType.Editor -> {
-                Platform.drawRectangle(
+                Raylib.drawRectangle(
                     -totalOffsetX,
                     WINDOW_HEIGHT / 2 + validPlaySpaceOffsetY,
                     WINDOW_WIDTH + totalOffsetX,
                     GameState.SIZE_Y_IN_TILES * GameState.tileSize,
                     Color(50, 50, 50, 122)
                 )
-                Platform.drawText(GameState.currentMap, 64, 64, 24, Color(0, 0, 0))
+                Raylib.drawText(GameState.currentMap, 64, 64, 24, Color(0, 0, 0))
                 GameState.renderables.forEach {
                     Render.drawSprite(
                         sprite = it.currentSprite,
@@ -270,7 +278,7 @@ object Engine {
 
         // DrawText("Offset X: ${GameState.playSpaceOffsetX}", 64, 64, 24, color(0, 0, 0))
 
-        Platform.endDrawing()
+        Raylib.endDrawing()
     }
 
     suspend fun executeWithFixedFrameRate(block: () -> Unit) {

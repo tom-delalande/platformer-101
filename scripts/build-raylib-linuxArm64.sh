@@ -10,7 +10,7 @@ TMP_DIR=$(mktemp -d)
 trap "rm -rf $TMP_DIR" EXIT
 
 docker buildx build --platform linux/arm64 --no-cache  -f Dockerfile.linuxArm64 -t raylib-builder-linuxarm64 .
-docker run --rm -v "$TMP_DIR:/output" raylib-builder-linuxArm64
+docker run --rm -v "$TMP_DIR:/output" raylib-builder-linuxarm64
 
 # Extract shared headers (if not already present)
 HEADERS_DIR=$PROJECT_DIR/native/include

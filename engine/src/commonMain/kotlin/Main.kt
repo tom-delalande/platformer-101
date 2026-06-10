@@ -1,4 +1,5 @@
 import Engine.executeWithFixedFrameRate
+import com.raylib.kmp.Raylib
 import game.Game
 import game.SceneType
 import game.Sprite
@@ -20,7 +21,7 @@ object Main {
         Game.init(mapUrl, sceneType)
         Game.setWindowProperties(Engine.WINDOW_HEIGHT, Engine.WINDOW_WIDTH)
 
-        while (!Platform.windowShouldClose()) {
+        while (!Raylib.windowShouldClose()) {
             try {
                 executeWithFixedFrameRate {
                     Engine.update()
@@ -32,8 +33,8 @@ object Main {
             }
         }
 
-        Assets.textures.forEach { Platform.unloadTexture(it.second) }
-        Assets.sounds.forEach { Platform.unloadSound(it.second) }
-        Platform.closeWindow()
+        Assets.textures.forEach { Raylib.unloadTexture(it.second) }
+        Assets.sounds.forEach { Raylib.unloadSound(it.second) }
+        Raylib.closeWindow()
     }
 }

@@ -1,3 +1,7 @@
+import com.raylib.kmp.Color
+import com.raylib.kmp.Raylib
+import com.raylib.kmp.Rectangle
+import com.raylib.kmp.Vector2
 import game.Sprite
 
 object Render {
@@ -13,15 +17,15 @@ object Render {
         flipHorizontally: Boolean = false,
         currentFrame: Int = 0,
     ) {
-        Platform.drawTexturePro(
+        Raylib.drawTexturePro(
             texture = Assets.fromSprite(sprite),
-            source = Rectangle(
+            srcrec = Rectangle(
                 x = (sprite.positionX.toFloat() + inputXOffset) + sprite.width * (currentFrame % sprite.numberOfFrames),
                 y = (sprite.positionY + inputYOffset),
                 width = if (flipHorizontally) sprite.width.toFloat() * -1 else sprite.width.toFloat(),
                 height = sprite.height.toFloat(),
             ),
-            dest = Rectangle(
+            dstrec = Rectangle(
                 x = outputPositionX,
                 y = outputPositionY,
                 width = outputWidth.toFloat(),

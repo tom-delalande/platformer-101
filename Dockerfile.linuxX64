@@ -35,12 +35,11 @@ RUN mkdir -p /artifacts/lib /artifacts/include && \
     cp /tmp/raylib-out/include/raylib.h /artifacts/include/ && \
     cp /tmp/raylib-out/include/raymath.h /artifacts/include/ && \
     cp /tmp/raylib-out/include/rlgl.h /artifacts/include/ && \
-    for lib in libGLESv2 libEGL libdrm libgbm libSDL2 libcrypt libasound2 libatomic; do \
-        find /usr -name "${lib}*" \( -type f -o -type l \) \
-            -not -name "*.la" -not -name "*.a" 2>/dev/null | \
+    for lib in libGLESv2 libEGL libdrm libgbm libSDL2-2.0 libcrypt libasound libatomic; do \
+        find -L /usr -name "${lib}.so*" -type f 2>/dev/null | \
         while read f; do cp -P "$f" /artifacts/lib/ 2>/dev/null; done; \
     done && \
     echo "=== Files in lib/ ===" && \
     ls -la /artifacts/lib/
 
-CMD cp -r /artifacts/* /output/
+CMD cp -rL /artifacts/* /output/
