@@ -13,7 +13,9 @@ repositories {
 
 kotlin {
     jvmToolchain(21)
-    jvm()
+    jvm {
+
+    }
     macosArm64 {
         compilations.getByName("main") {
             cinterops {
@@ -94,7 +96,7 @@ kotlin {
     }
 }
 
-val runJvm by tasks.registering(JavaExec::class) {
+val runJvmMacOS by tasks.registering(JavaExec::class) {
     group = "application"
     description = "Run the JVM application"
     dependsOn("compileKotlinJvm")
@@ -106,4 +108,24 @@ val runJvm by tasks.registering(JavaExec::class) {
     )
     mainClass.set("MainKt")
     workingDir = rootProject.layout.projectDirectory.asFile
+}
+
+val runJvmWindows by tasks.registering(JavaExec::class) {
+    group = "application"
+    description = "Run the JVM application"
+    dependsOn("compileKotlinJvm")
+    classpath = files(
+        tasks.named("compileKotlinJvm").map { it.outputs.files },
+        configurations.named("jvmRuntimeClasspath")
+    )
+    mainClass.set("MainKt")
+    workingDir = rootProject.layout.projectDirectory.asFile
+
+    jvmArgs(
+        "-XX:+UseZGC",
+        "-XX:+ZGenerational",
+        "-XX:+ForceTimeHighResolution",
+        "-Xms1g",
+        "-Xmx1g",
+    )
 }

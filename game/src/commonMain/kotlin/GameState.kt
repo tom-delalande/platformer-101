@@ -106,6 +106,7 @@ object GameState {
     var maxJumpVelocity = 34f / 64
     var jumpSpeed = 10f / 64
     var gravity = 6f / 64
+    var maxFallVelocity = 30f / 64
 
     var playerCurrentAnimationFrame: Int = 0
 

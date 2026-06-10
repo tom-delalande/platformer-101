@@ -189,7 +189,7 @@ object Game {
                     GameState.playerVelocityXInTiles = min(GameState.playerVelocityXInTiles + friction, 0f)
                 }
                 if (!GameState.playerIsGrounded) {
-                    GameState.playerVelocityYInTiles -= gravity
+                    GameState.playerVelocityYInTiles = max(GameState.playerVelocityYInTiles - gravity, -GameState.maxFallVelocity)
                 }
                 GameState.playerCurrentAnimationFrame += 1
                 GameState.backgroundOffsetY -= 1

@@ -23,11 +23,9 @@ object Main {
 
         while (!Raylib.windowShouldClose()) {
             try {
-                executeWithFixedFrameRate {
                     Engine.update()
                     Game.update()
                     Engine.render()
-                }
             } catch (_: Engine.CloseGameException) {
                 break
             }

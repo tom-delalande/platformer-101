@@ -25,7 +25,7 @@ object Engine {
     fun init() {
         val windowed = Platform.getEnv("WINDOWED") == "true"
         if (!windowed) Raylib.setConfigFlags(ConfigFlags.FLAG_WINDOW_UNDECORATED.toUInt())
-        Raylib.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Platformer 101")
+        Raylib.initWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Strawberry Platformer")
         Raylib.initAudioDevice()
         Raylib.setTargetFPS(TARGET_FPS)
         if (!windowed) {
@@ -35,10 +35,15 @@ object Engine {
         }
         Raylib.setWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT)
         Raylib.setWindowPosition(0, 0)
-//        HideCursor()
+        Raylib.hideCursor()
     }
 
     fun update() {
+        when (GameState.sceneType) {
+            SceneType.Editor -> Raylib.showCursor()
+            SceneType.Play -> Raylib.hideCursor()
+        }
+
         GameState.wasPressed = GameState.isPressed
 
         GameState.isPressed = buildList {
@@ -277,6 +282,9 @@ object Engine {
         }
 
         // DrawText("Offset X: ${GameState.playSpaceOffsetX}", 64, 64, 24, color(0, 0, 0))
+        if (Platform.getEnv("SHOW_FPS") == "true") {
+            Raylib.drawFPS(15, 15)
+        }
 
         Raylib.endDrawing()
     }
